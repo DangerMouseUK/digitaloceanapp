@@ -1,0 +1,20 @@
+{
+  "name": "digitaloceanapp",
+  "version": "1.0.0-rc.1",
+  "description": "Evidence-based DigitalOcean workflows using official MCP services. No backend or credential custody.",
+  "author": {
+    "name": "DangerMouseUK",
+    "url": "https://github.com/DangerMouseUK"
+  },
+  "homepage": "https://github.com/DangerMouseUK/digitaloceanapp",
+  "repository": "https://github.com/DangerMouseUK/digitaloceanapp",
+  "license": "MIT",
+  "keywords": [
+    "digitalocean",
+    "mcp",
+    "infrastructure",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

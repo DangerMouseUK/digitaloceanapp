@@ -1,0 +1,6 @@
+{
+  "core": ["accounts", "apps", "insights", "docs"],
+  "app-platform": ["accounts", "apps", "insights", "docr", "spaces", "networking", "docs"],
+  "infrastructure": ["accounts", "droplets", "databases", "doks", "networking", "volumes", "nfs", "insights", "docs"],
+  "full": "all-reviewed-services"
+}

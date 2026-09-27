@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "digitalocean": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@digitalocean/mcp@1.1.1",
+        "--services",
+        "accounts,apps,insights,docr,spaces,networking,docs"
+      ],
+      "type": "stdio"
+    }
+  },
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+}

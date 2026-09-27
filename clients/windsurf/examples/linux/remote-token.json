@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "digitalocean-accounts": {
+      "serverUrl": "https://accounts.mcp.digitalocean.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:DIGITALOCEAN_API_TOKEN}"
+      }
+    },
+    "digitalocean-apps": {
+      "serverUrl": "https://apps.mcp.digitalocean.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:DIGITALOCEAN_API_TOKEN}"
+      }
+    },
+    "digitalocean-insights": {
+      "serverUrl": "https://insights.mcp.digitalocean.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:DIGITALOCEAN_API_TOKEN}"
+      }
+    },
+    "digitalocean-docs": {
+      "serverUrl": "https://docs.mcp.digitalocean.com/mcp"
+    }
+  }
+}

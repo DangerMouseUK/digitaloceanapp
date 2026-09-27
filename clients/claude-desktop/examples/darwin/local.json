@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "digitalocean": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@digitalocean/mcp@1.1.1",
+        "--services",
+        "accounts,apps,insights,docs"
+      ]
+    }
+  }
+}

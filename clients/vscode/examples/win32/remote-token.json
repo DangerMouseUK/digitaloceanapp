@@ -1,0 +1,37 @@
+{
+  "servers": {
+    "digitalocean-accounts": {
+      "url": "https://accounts.mcp.digitalocean.com/mcp",
+      "type": "http",
+      "headers": {
+        "Authorization": "Bearer ${input:digitalocean-token}"
+      }
+    },
+    "digitalocean-apps": {
+      "url": "https://apps.mcp.digitalocean.com/mcp",
+      "type": "http",
+      "headers": {
+        "Authorization": "Bearer ${input:digitalocean-token}"
+      }
+    },
+    "digitalocean-insights": {
+      "url": "https://insights.mcp.digitalocean.com/mcp",
+      "type": "http",
+      "headers": {
+        "Authorization": "Bearer ${input:digitalocean-token}"
+      }
+    },
+    "digitalocean-docs": {
+      "url": "https://docs.mcp.digitalocean.com/mcp",
+      "type": "http"
+    }
+  },
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "digitalocean-token",
+      "description": "DigitalOcean API token (stored by VS Code, not digitaloceanapp)",
+      "password": true
+    }
+  ]
+}
