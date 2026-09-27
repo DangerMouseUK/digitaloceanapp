@@ -5,10 +5,15 @@ import { isDeepStrictEqual } from 'node:util';
 import { resolve } from 'node:path';
 import { configuration, clients } from './clients.js';
 import { bundleFiles, containedFile } from './bundle.js';
-import { selectServices } from './catalog.js';
+import {
+  selectServices,
+  manifest,
+  modes,
+  platforms,
+  services,
+} from './catalog.js';
 
-// Other MCP providers may coexist with DigitalOcean. Their safe references are
-// permitted here; DigitalOcean entries are checked against the exact adapter below.
+// Credential-reference rules apply to managed entries, not unrelated client settings.
 const isReference = (value) =>
   /^\$\{(?:(?:env|input):)?[A-Za-z_][A-Za-z0-9_-]*\}$/.test(value);
 export function hasSecret(text) {
@@ -57,12 +62,31 @@ export function parseConfiguration(text, client) {
   }
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new Error('Configuration must be an object.');
-  if (credentialProblem(value))
-    throw new Error(
-      'Embedded credential or unsupported secret reference detected; values are suppressed.',
-    );
   // TOML parsers may use null-prototype tables; compare semantic data uniformly.
   return JSON.parse(JSON.stringify(value));
+}
+
+function managedServer(name, entry) {
+  if (name === 'digitalocean' || name.startsWith('digitalocean-')) return true;
+  if (!entry || typeof entry !== 'object') return false;
+  for (const value of [entry.url, entry.serverUrl]) {
+    if (typeof value !== 'string') continue;
+    try {
+      const { hostname } = new URL(value);
+      if (
+        hostname === 'mcp.digitalocean.com' ||
+        hostname.endsWith('.mcp.digitalocean.com')
+      )
+        return true;
+    } catch {
+      // Unrelated malformed URLs are outside this validator's scope.
+    }
+  }
+  return [entry.command, ...(Array.isArray(entry.args) ? entry.args : [])].some(
+    (value) =>
+      typeof value === 'string' &&
+      /^@digitalocean\/mcp(?:@[^\s]+)?$/.test(value),
+  );
 }
 
 export function validateConfiguration(text, options) {
@@ -85,31 +109,42 @@ export function validateConfiguration(text, options) {
         'Connector endpoints or selected services differ from the registry.',
       );
   } else {
+    if (Array.isArray(actual[field]))
+      throw new Error('MCP servers must be an object.');
     const managed = Object.fromEntries(
-      Object.entries(actual[field]).filter(
-        ([name, entry]) =>
-          name === 'digitalocean' ||
-          name.startsWith('digitalocean-') ||
-          /digitalocean/i.test(JSON.stringify(entry)),
+      Object.entries(actual[field]).filter(([name, entry]) =>
+        managedServer(name, entry),
       ),
     );
+    if (credentialProblem(managed))
+      throw new Error(
+        'Embedded credential or unsupported secret reference detected; values are suppressed.',
+      );
     if (!isDeepStrictEqual(managed, desired[field]))
       throw new Error(
         'DigitalOcean configuration differs: check missing/unexpected services, exact endpoints, package version, transport and credential references.',
       );
   }
   if (desired.inputs) {
-    const input = actual.inputs?.find(
+    if (
+      !Array.isArray(actual.inputs) ||
+      actual.inputs.some(
+        (entry) => !entry || typeof entry !== 'object' || Array.isArray(entry),
+      )
+    )
+      throw new Error('VS Code inputs must be an array of input objects.');
+    const inputs = actual.inputs.filter(
       (entry) => entry.id === 'digitalocean-token',
     );
+    const [input] = inputs;
     if (
-      !input ||
+      inputs.length !== 1 ||
       input.type !== 'promptString' ||
       input.password !== true ||
       Object.hasOwn(input, 'default')
     )
       throw new Error(
-        'VS Code requires a password input without a default value.',
+        'VS Code requires exactly one digitalocean-token password input without a default value.',
       );
   }
   return { services: options.keys, authentication: 'unverified' };
@@ -130,8 +165,31 @@ export async function validatePath(path, options = {}) {
       const meta = JSON.parse(
         await readFile(await containedFile(target, 'bundle.json'), 'utf8'),
       );
-      if (meta.schemaVersion !== 1 || !Array.isArray(meta.keys))
-        throw new Error('Unsupported bundle metadata.');
+      if (
+        !meta ||
+        typeof meta !== 'object' ||
+        Array.isArray(meta) ||
+        meta.schemaVersion !== 1 ||
+        typeof meta.version !== 'string' ||
+        typeof meta.client !== 'string' ||
+        !Object.hasOwn(clients, meta.client) ||
+        !modes.includes(meta.mode) ||
+        !platforms.includes(meta.platform) ||
+        typeof meta.configFile !== 'string' ||
+        !Array.isArray(meta.keys) ||
+        !meta.keys.length ||
+        meta.keys.some(
+          (key) => typeof key !== 'string' || !services.has(key),
+        ) ||
+        new Set(meta.keys).size !== meta.keys.length
+      )
+        throw new Error(
+          'Invalid or incomplete bundle metadata. Regenerate the bundle.',
+        );
+      if (meta.version !== manifest.version)
+        throw new Error(
+          'Bundle version differs from this installed digitaloceanapp version. Regenerate the bundle.',
+        );
       const selected = {
         client: meta.client,
         mode: meta.mode,
@@ -145,6 +203,12 @@ export async function validatePath(path, options = {}) {
         await readFile(await containedFile(target, expected.file), 'utf8'),
         selected,
       );
+      if (
+        !(
+          await readFile(await containedFile(target, 'INSTALL.md'), 'utf8')
+        ).trim()
+      )
+        throw new Error('Bundle INSTALL.md is empty. Regenerate the bundle.');
       for (const [file, content] of await bundleFiles(selected)) {
         if (
           file === 'bundle.json' ||

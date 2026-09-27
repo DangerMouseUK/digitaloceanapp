@@ -7,12 +7,15 @@ import {
   mkdir,
   readdir,
   symlink,
+  rm,
+  cp,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, resolve, relative, sep } from 'node:path';
+import { getFileInfo } from 'prettier';
 import { spawnSync, spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { root, selectServices } from '../src/catalog.js';
+import { root, selectServices, manifest } from '../src/catalog.js';
 import { clients } from '../src/clients.js';
 import { createBundle } from '../src/bundle.js';
 import { validatePath } from '../src/validate.js';
@@ -137,20 +140,13 @@ test('CLI missing inputs, invalid options and cancellation return failure withou
   await assert.rejects(readdir(join(temp, 'output-digitaloceanapp')));
 });
 
-test('interactive setup completes through native prompts', async () => {
-  const out = join(temp, 'interactive');
-  const answers = [
-    'codex',
-    'remote-oauth',
-    'custom',
-    'docs',
-    process.platform,
-    out,
-  ];
-  const result = await new Promise((resolveResult, reject) => {
-    const child = spawn(process.execPath, [cli, 'setup', '--interactive'], {
-      cwd: temp,
-    });
+function runInteractive(args, answers, cwd = temp) {
+  return new Promise((resolveResult, reject) => {
+    const child = spawn(
+      process.execPath,
+      [cli, 'setup', '--interactive', ...args],
+      { cwd },
+    );
     let stdout = '',
       stderr = '',
       pending = '';
@@ -162,22 +158,94 @@ test('interactive setup completes through native prompts', async () => {
       const text = data.toString();
       stdout += text;
       pending += text;
-      if (pending.endsWith(': ') && answers.length) {
+      if (pending.endsWith(': ')) {
         pending = '';
-        child.stdin.write(answers.shift() + '\n');
+        const answer = answers.shift();
+        if (answer === undefined) child.stdin.end();
+        else child.stdin.write(answer + '\n');
       }
     });
     child.stderr.on('data', (data) => {
       stderr += data.toString();
     });
-    child.on('error', reject);
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
     child.on('close', (status) => {
       clearTimeout(timer);
       resolveResult({ status, stdout, stderr });
     });
   });
+}
+
+test('interactive setup completes through native prompts', async () => {
+  const out = join(temp, 'interactive');
+  const result = await runInteractive(
+    [],
+    ['codex', 'remote-oauth', 'custom', 'docs', process.platform, out],
+  );
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual((await validatePath(out)).services, ['docs']);
+});
+
+test('interactive setup corrects invalid answers and limits modes to the chosen client', async () => {
+  const out = join(temp, 'interactive corrections');
+  const result = await runInteractive(
+    [],
+    [
+      'invalid-client',
+      'chatgpt',
+      'local',
+      'remote-oauth',
+      'invalid-preset',
+      'custom',
+      'invalid-service',
+      'docs',
+      'invalid-platform',
+      process.platform,
+      out,
+    ],
+  );
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(result.stdout.includes('Mode (remote-oauth)'));
+  assert.ok(
+    !result.stdout.includes('Mode (remote-oauth, remote-token, local)'),
+  );
+  assert.deepEqual((await validatePath(out)).services, ['docs']);
+  const desktop = join(temp, 'interactive desktop');
+  const selected = await runInteractive(
+    ['--client', 'claude-desktop', '--services', 'docs'],
+    ['remote-oauth', 'linux', 'win32', desktop],
+  );
+  assert.equal(selected.status, 0, selected.stderr);
+  assert.ok(selected.stdout.includes('Platform (win32, darwin)'));
+  assert.equal((await validatePath(desktop)).options.platform, 'win32');
+});
+
+test('interactive setup rejects invalid explicit flags before prompting and cancels after correction', async () => {
+  for (const args of [
+    ['--client', 'chatgpt', '--mode', 'local'],
+    ['--client', 'invalid'],
+    ['--mode', 'invalid'],
+    ['--platform', 'invalid'],
+    ['--client', 'claude-desktop', '--platform', 'linux'],
+    ['--services', 'invalid'],
+    ['--preset', 'core', '--services', 'apps'],
+  ]) {
+    const out = join(temp, 'invalid interactive output');
+    const result = run(['setup', '--interactive', ...args, '--output', out], {
+      input: '',
+    });
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, '');
+    await assert.rejects(readdir(out));
+  }
+  const cwd = join(temp, 'cancelled after invalid');
+  await mkdir(cwd);
+  const cancelled = await runInteractive([], ['invalid-client'], cwd);
+  assert.equal(cancelled.status, 130, cancelled.stderr);
+  assert.deepEqual(await readdir(cwd), []);
 });
 
 test('malformed/secret configurations fail without leaking values on stdout or stderr', async () => {
@@ -258,6 +326,7 @@ test('bundle references cannot escape through directory links', async (t) => {
     join(target, 'bundle.json'),
     JSON.stringify({
       schemaVersion: 1,
+      version: manifest.version,
       client: 'codex',
       mode: 'remote-oauth',
       keys: ['apps'],
@@ -266,6 +335,106 @@ test('bundle references cannot escape through directory links', async (t) => {
     }),
   );
   await assert.rejects(validatePath(target), /escapes/);
+});
+
+test('bundle validation requires complete current metadata and nonempty installation instructions', async () => {
+  const target = join(temp, 'metadata review');
+  await createBundle(
+    {
+      client: 'cursor',
+      mode: 'remote-oauth',
+      keys: ['docs'],
+      platform: process.platform,
+    },
+    target,
+  );
+  const path = join(target, 'bundle.json');
+  const meta = JSON.parse(await readFile(path, 'utf8'));
+  for (const field of [
+    'schemaVersion',
+    'version',
+    'client',
+    'mode',
+    'keys',
+    'platform',
+    'configFile',
+  ]) {
+    const incomplete = { ...meta };
+    delete incomplete[field];
+    await writeFile(path, JSON.stringify(incomplete));
+    await assert.rejects(validatePath(target), /metadata.*Regenerate/);
+  }
+  for (const invalid of [
+    null,
+    [],
+    { ...meta, version: '0.0.0' },
+    { ...meta, keys: ['docs', 'docs'] },
+    { ...meta, keys: [{}] },
+    { ...meta, keys: [] },
+    { ...meta, schemaVersion: 2 },
+    { ...meta, client: {} },
+    { ...meta, platform: 'unknown' },
+    { ...meta, mode: 'unknown' },
+  ]) {
+    await writeFile(path, JSON.stringify(invalid));
+    await assert.rejects(validatePath(target), /metadata|version/);
+  }
+  await writeFile(path, JSON.stringify(meta));
+  const guide = join(target, 'INSTALL.md');
+  await writeFile(guide, 'My installation notes\n');
+  await validatePath(target);
+  await writeFile(guide, ' \r\n');
+  await assert.rejects(validatePath(target), /INSTALL.md is empty/);
+  await rm(guide);
+  await assert.rejects(validatePath(target), /required files/);
+  await mkdir(guide);
+  await assert.rejects(validatePath(target), /regular file/);
+});
+
+test('default setup output is excluded from repository validation and formatting', async () => {
+  const fixture = join(temp, 'repository fixture');
+  const source = fileURLToPath(root);
+  await cp(source, fixture, {
+    recursive: true,
+    filter: (path) =>
+      ![
+        '.git',
+        'node_modules',
+        'dist',
+        'coverage',
+        'output',
+        'output-digitaloceanapp',
+      ].includes(relative(source, path).split(sep)[0]),
+  });
+  try {
+    await symlink(
+      join(source, 'node_modules'),
+      join(fixture, 'node_modules'),
+      process.platform === 'win32' ? 'junction' : 'dir',
+    );
+  } catch {
+    await cp(join(source, 'node_modules'), join(fixture, 'node_modules'), {
+      recursive: true,
+    });
+  }
+  const setup = spawnSync(
+    process.execPath,
+    ['bin/digitaloceanapp.js', 'setup', '--client', 'plugin'],
+    { cwd: fixture, encoding: 'utf8', timeout: 20000 },
+  );
+  assert.equal(setup.status, 0, setup.stderr);
+  const validation = spawnSync(process.execPath, ['scripts/validate.js'], {
+    cwd: fixture,
+    encoding: 'utf8',
+    timeout: 20000,
+  });
+  assert.equal(validation.status, 0, validation.stderr);
+  const info = await getFileInfo(
+    join(fixture, 'output-digitaloceanapp', 'INSTALL.md'),
+    { ignorePath: join(fixture, '.prettierignore') },
+  );
+  assert.equal(info.ignored, true);
+  await validatePath(join(fixture, 'output-digitaloceanapp'));
 });
 
 test(

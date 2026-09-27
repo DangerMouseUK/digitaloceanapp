@@ -2,9 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import Ajv from 'ajv/dist/2020.js';
-import { registry, presets, selectServices, root } from '../src/catalog.js';
+import {
+  registry,
+  presets,
+  selectServices,
+  root,
+  services,
+} from '../src/catalog.js';
 import { clients, configuration } from '../src/clients.js';
 import { parseConfiguration, validateConfiguration } from '../src/validate.js';
+import { installationGuide } from '../src/bundle.js';
 
 const schema = JSON.parse(
   await readFile(new URL('schemas/mcp.schema.json', root), 'utf8'),
@@ -232,6 +239,24 @@ test('token credentials and VS Code password input constraints are enforced', ()
   };
   for (const change of [
     (c) => {
+      c.inputs.push({ ...c.inputs[0], password: false });
+    },
+    (c) => {
+      c.inputs.push({ ...c.inputs[0] });
+    },
+    (c) => {
+      c.inputs = {};
+    },
+    (c) => {
+      c.inputs = [null];
+    },
+    (c) => {
+      c.inputs = ['invalid'];
+    },
+    (c) => {
+      c.inputs = [[]];
+    },
+    (c) => {
       c.inputs[0].password = false;
     },
     (c) => {
@@ -249,4 +274,146 @@ test('token credentials and VS Code password input constraints are enforced', ()
     change(config);
     assert.throws(() => validateConfiguration(JSON.stringify(config), options));
   }
+});
+
+test('validation scopes server identification and credential rules to DigitalOcean', () => {
+  const options = {
+    client: 'cursor',
+    mode: 'remote-oauth',
+    keys: ['apps'],
+    platform: 'linux',
+  };
+  const config = JSON.parse(configuration(options).content);
+  config.mcpServers.other = {
+    url: 'https://example.com/mcp',
+    description: 'Documentation for DigitalOcean projects',
+    env: { TOKENIZER_MODEL: 'example-model' },
+  };
+  config.secret_setting_description = 'A noncredential client setting';
+  assert.doesNotThrow(() =>
+    validateConfiguration(JSON.stringify(config), options),
+  );
+  for (const entry of [
+    { url: 'https://docs.mcp.digitalocean.com/mcp' },
+    { serverUrl: 'https://apps.mcp.digitalocean.com/mcp' },
+    { command: 'npx', args: ['-y', '@digitalocean/mcp@0.0.0'] },
+    { command: '@digitalocean/mcp' },
+  ]) {
+    config.mcpServers.extra = entry;
+    assert.throws(
+      () => validateConfiguration(JSON.stringify(config), options),
+      /DigitalOcean configuration differs/,
+    );
+  }
+  delete config.mcpServers.extra;
+  const sentinel = 'dop_v1_' + 'c'.repeat(64);
+  config.mcpServers.other.description = sentinel;
+  assert.throws(
+    () => validateConfiguration(JSON.stringify(config), options),
+    (error) =>
+      /credential/.test(error.message) && !error.message.includes(sentinel),
+  );
+});
+
+test('remote-only services use remote authentication metadata and reject local selection', () => {
+  const original = services.get('docs');
+  try {
+    for (const authentication of ['none', 'oauth-or-token']) {
+      services.set('docs', {
+        ...original,
+        local: null,
+        remote: { ...original.remote, authentication },
+      });
+      for (const mode of ['remote-oauth', 'remote-token']) {
+        const options = {
+          client: 'vscode',
+          mode,
+          keys: ['docs'],
+          platform: 'linux',
+        };
+        const config = JSON.parse(configuration(options).content);
+        const needsToken = mode === 'remote-token' && authentication !== 'none';
+        assert.equal(Boolean(config.inputs), needsToken);
+        assert.equal(
+          Boolean(config.servers['digitalocean-docs'].headers),
+          needsToken,
+        );
+        assert.doesNotThrow(() =>
+          validateConfiguration(JSON.stringify(config), options),
+        );
+        const guide = installationGuide(options);
+        assert.equal(
+          guide.includes('require no DigitalOcean token'),
+          authentication === 'none',
+        );
+      }
+      assert.throws(
+        () =>
+          configuration({
+            client: 'vscode',
+            mode: 'local',
+            keys: ['docs'],
+            platform: 'linux',
+          }),
+        /unavailable locally/,
+      );
+    }
+    services.set('docs', {
+      ...original,
+      local: { ...original.local, requiresToken: true },
+    });
+    const local = JSON.parse(
+      configuration({
+        client: 'vscode',
+        mode: 'local',
+        keys: ['docs'],
+        platform: 'linux',
+      }).content,
+    );
+    assert.ok(local.inputs);
+    assert.ok(local.servers.digitalocean.env);
+  } finally {
+    services.set('docs', original);
+  }
+});
+
+test('installation guidance matches selected services, client and mode', () => {
+  const options = {
+    client: 'vscode',
+    mode: 'remote-oauth',
+    keys: ['docs'],
+    platform: 'win32',
+  };
+  const docs = installationGuide(options);
+  assert.ok(docs.includes('Find official DigitalOcean documentation'));
+  assert.ok(!docs.includes('Show me my DigitalOcean account'));
+  assert.ok(docs.includes('validate --path "../My DigitalOcean bundle"'));
+  assert.ok(!docs.includes('Remove digitalocean-token'));
+  assert.ok(
+    installationGuide({ ...options, keys: ['apps'] }).includes(
+      'List my DigitalOcean App Platform apps',
+    ),
+  );
+  assert.ok(
+    installationGuide({ ...options, keys: ['accounts'] }).includes(
+      'Show me my DigitalOcean account',
+    ),
+  );
+  assert.ok(
+    installationGuide({
+      ...options,
+      keys: ['apps'],
+      mode: 'remote-token',
+    }).includes('Remove digitalocean-token'),
+  );
+  const remote = installationGuide({ ...options, client: 'claude-desktop' });
+  assert.ok(remote.includes('connectors.json'));
+  assert.ok(!remote.includes('claude_desktop_config.json'));
+  const local = installationGuide({
+    ...options,
+    client: 'claude-desktop',
+    mode: 'local',
+  });
+  assert.ok(local.includes('%APPDATA%/Claude/claude_desktop_config.json'));
+  assert.ok(!local.includes('Add custom connector'));
 });
