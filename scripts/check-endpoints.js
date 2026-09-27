@@ -7,13 +7,12 @@ export function parseUpstream(readme, localSource) {
   for (const [, key, url] of readme.matchAll(
     /^\|\s*([a-z][a-z0-9-]*)\s*\|\s*(https:\/\/[^\s|]+)\s*\|/gm,
   )) {
-    if (!url.includes('.mcp.digitalocean.com/')) continue;
+    const parsed = new URL(url);
+    if (!parsed.hostname.endsWith('.mcp.digitalocean.com')) continue;
     if (remote.has(key))
       throw new Error('Duplicate upstream service. Manual review required.');
-    const parsed = new URL(url);
     if (
       parsed.protocol !== 'https:' ||
-      !parsed.hostname.endsWith('.mcp.digitalocean.com') ||
       parsed.username ||
       parsed.password ||
       parsed.search ||
