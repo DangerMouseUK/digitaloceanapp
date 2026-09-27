@@ -1,0 +1,9 @@
+docs/prd.md
+schemas/
+package-lock.json
+configs/
+clients/*/examples/
+.mcp.json
+.codex-plugin/plugin.json
+mcp.json
+docs/supported-services.md

@@ -1,0 +1,53 @@
+{
+  "name": "digitaloceanapp",
+  "version": "1.0.0-rc.1",
+  "description": "Local configuration and skills for DigitalOcean's official MCP services",
+  "type": "module",
+  "license": "MIT",
+  "author": "DangerMouseUK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DangerMouseUK/digitaloceanapp.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "digitaloceanapp": "bin/digitaloceanapp.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "data/",
+    "skills/",
+    "clients/",
+    "configs/",
+    "docs/",
+    "plugin.json",
+    "mcp.json",
+    ".codex-plugin/",
+    ".mcp.json",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "start": "node bin/digitaloceanapp.js",
+    "generate": "node scripts/generate.js",
+    "generate:check": "node scripts/generate.js --check",
+    "test": "node --test",
+    "validate": "node scripts/validate.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run generate:check && npm run validate && npm test && npm run format:check",
+    "endpoints:check": "node scripts/check-endpoints.js"
+  },
+  "dependencies": {
+    "jsonc-parser": "3.3.1",
+    "smol-toml": "1.9.0"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "prettier": "3.9.9",
+    "yaml": "2.9.1"
+  }
+}
