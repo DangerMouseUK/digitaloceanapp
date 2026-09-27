@@ -15,6 +15,14 @@ Implementation target: 1.0.0-rc.2. Source review: 2026-09-27. This file separate
 
 Automated results are recorded by the implementation PR and GitHub Actions for its exact commit. This table describes suite coverage, not an assertion that unrun CI jobs passed. Endpoint registry and package identifiers were checked against DigitalOcean v1.1.1; plugin schemas target Agent Plugins 1.0.0.
 
+## Python skill validation
+
+On 2026-09-27, the Codex skill-creator `quick_validate.py` checker passed for all 13 skills on Windows using Python 3.14.7, PyYAML 6.0.3 and `-X utf8`. The check covered YAML frontmatter, allowed metadata fields, names, descriptions and unfinished scaffold placeholders.
+
+The Python environments visible to the authoring session still lacked PyYAML, so the successful run used an isolated environment under the ignored `output/skill-validation-venv/` directory. System Python and project dependencies were not changed. The initial attempt without `-X utf8` encountered Windows decoding errors in seven skills; rerunning in UTF-8 mode passed without editing the skills. See the [reproduction guidance](../tests/skills/README.md#optional-python-structural-check).
+
+The repository's `npm run validate` and the targeted recorded-evidence integrity test also passed. These checks validate structure and evidence consistency; they do not rerun behavioral scenarios, authenticate a client or close any pending live acceptance gate. This successful Python run supersedes the earlier report that the optional checker could not run because PyYAML was unavailable.
+
 ## V2 synthetic walkthrough record
 
 On 2026-09-27, the authoring GPT-6 Codex session executed all 20 synthetic scenarios using the local fixture recorder. The [record](../tests/skills/evaluation.json) includes actual fixture-read calls, the one authorized simulated redeployment, responses, skill/scenario hashes, timestamps and per-expectation judgments. See the [reproduction instructions](../tests/skills/README.md).
