@@ -15,7 +15,7 @@ node bin/digitaloceanapp.js validate --path "../My DigitalOcean bundle"
 node bin/digitaloceanapp.js doctor --path "../My DigitalOcean bundle"
 ```
 
-Bundle validation requires complete `bundle.json` metadata matching the installed digitaloceanapp version, the configuration and supporting files, and a nonempty `INSTALL.md`. You may annotate the installation guide. If metadata is incomplete or the version differs, generate a new bundle and review it before updating your installed configuration; do not change the recorded version just to pass validation.
+Bundle validation requires complete `bundle.json` metadata matching the installed digitaloceanapp version, the configuration and supporting files, and a nonempty `INSTALL.md`. You may annotate the installation guide. If metadata is incomplete, generate a new bundle and review it before updating your installed configuration. For a recognized older version, use [upgrade](upgrading.md) to retain its selection and review changes; do not change the recorded version just to pass validation.
 
 Installed-file validation checks DigitalOcean entries and their credential references. Unrelated server descriptions and settings are outside that check, although recognizable embedded secret patterns anywhere in the file are still rejected. VS Code token modes require exactly one `digitalocean-token` password input with no default value; remove ambiguous duplicates while preserving unrelated inputs.
 

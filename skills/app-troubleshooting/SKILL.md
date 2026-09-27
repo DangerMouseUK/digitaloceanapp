@@ -25,6 +25,12 @@ Discover the tools actually available in the current client; upstream tool names
 
 6. Propose the smallest evidence-supported next check or fix. Do not invent a root cause if logs or status are insufficient.
 
+   - Build: correlate the failing command with the lockfile, build context, runtime version, and dependency or image-fetch error actually reported. An image-pull failure is not evidence that a token should be retrieved.
+   - Startup: check the exit reason, run command, listener port and available startup events. Distinguish a process exiting from a process that starts but never becomes ready. Inspect environment variable names or bindings only, not secret values.
+   - Health check: compare the configured path, port, protocol and timing with reported responses. A failed readiness check does not prove the build failed or the whole account is down.
+   - Runtime: align restarts, errors and available measurements to the affected deployment and time window. Separate observed resource exhaustion from a hypothesis when metrics are missing.
+   - Dependencies: follow explicit image tags/digests, storage references, routes and database bindings. Check linked resource status and region where exposed. Matching names alone do not establish a dependency; lack of visibility does not prove it is absent.
+
 7. If the user suggests deleting/recreating the app, investigate first. Explain data-loss and availability consequences and require an exact authorized target before a separate destructive operation.
 
 ## Evidence and safety
@@ -38,3 +44,5 @@ Skills are behavioral guidance, not an enforcement boundary. Available operation
 ## Result
 
 Report what failed, evidence, likely cause with confidence/uncertainty, next check, proposed fix and official references. No redeploy, configuration change or recreation occurs as part of this diagnostic workflow.
+
+For example, “Why did deploy-1 fail while deploy-2 is serving?” should identify the failed phase and the current serving state separately. For each proposed fix, state what observation supports it and how the user could verify it after a separately authorized change.

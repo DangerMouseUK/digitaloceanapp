@@ -6,7 +6,7 @@ Connect your assistant to [DigitalOcean's official MCP servers](https://github.c
 
 Your assistant connects directly to DigitalOcean, either through its hosted servers or its official MCP package running on your computer. This project runs no backend and receives none of your credentials or account data.
 
-**Release candidate:** `1.0.0-rc.1`. Automated configuration and packaging checks pass on Windows, macOS, and Linux. Live authentication and client testing are [still pending](docs/acceptance.md).
+**Release candidate:** `1.0.0-rc.2`. Client configurations are experimental templates with automated format and packaging coverage. No authenticated client/mode combination is certified yet; live authentication and client testing are [still pending](docs/acceptance.md). The [V2 roadmap](docs/v2-roadmap.md) tracks the new workflows and upgrade path.
 
 ## Get started
 
@@ -33,7 +33,9 @@ Try asking:
 
 The included skills also cover account audits, recent deployment history, infrastructure relationships, and official documentation research. Review and troubleshooting skills are written to inspect resources without changing them; resource changes require a specific request.
 
-## Choose a client
+Dedicated database, Kubernetes, Droplet and networking reviews help investigate infrastructure concerns. Select the **infrastructure** preset for those services. Try “Why can app-a not reach db-a?” or “Review cluster-a and report what you can verify about its node pools.” Tools and evidence available through your client determine coverage.
+
+## Choose a client template
 
 | Client                      | Setup guide                                                      |
 | --------------------------- | ---------------------------------------------------------------- |
@@ -85,6 +87,19 @@ node bin/digitaloceanapp.js doctor --path ./do-config
 `validate` checks the generated files. `doctor` also checks local prerequisites and whether a required token variable is present, without displaying it. Both run offline; confirm the actual connection in your client's MCP settings.
 
 Run `node bin/digitaloceanapp.js --help` for all options. If something isn't working, start with [troubleshooting](docs/troubleshooting.md).
+
+For structured redacted output, add `--json` to `validate` or `doctor`. Reports include stable check codes, pass/fail outcomes and corrective actions. Authentication remains unverified; see the [diagnostic format](docs/diagnostics.md).
+
+## Upgrade an existing bundle
+
+Inspect changes, then generate a replacement in a new directory:
+
+```sh
+node bin/digitaloceanapp.js upgrade --path "../My old bundle" --dry-run
+node bin/digitaloceanapp.js upgrade --path "../My old bundle" --output "../My new bundle"
+```
+
+The upgrade preserves your selected services, client, platform and connection mode. Read the generated `MIGRATE.md` and review flagged differences and customizations before manually installing. Your old bundle and client settings remain intact. See [upgrading](docs/upgrading.md) for accepted versions and review limits.
 
 ## Permissions and privacy
 

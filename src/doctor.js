@@ -35,6 +35,7 @@ export async function diagnose(path, options, env = process.env) {
   const result = await validatePath(path, options);
   const findings = [
     {
+      code: 'NODE_VERSION',
       check: 'Node.js >=22',
       ok: Number(process.versions.node.split('.')[0]) >= 22,
       remedy: 'Install Node.js 22 or newer and rerun doctor.',
@@ -43,6 +44,7 @@ export async function diagnose(path, options, env = process.env) {
   const { client, mode, keys, platform } = result.options;
   if (mode === 'local')
     findings.push({
+      code: 'NPX_AVAILABLE',
       check: 'npx available on PATH (package startup unverified)',
       ok: await executableAvailable('npx', env),
       remedy:
@@ -51,11 +53,13 @@ export async function diagnose(path, options, env = process.env) {
   if (mode !== 'remote-oauth' && requiresAuthentication(keys, mode)) {
     if (client === 'vscode')
       findings.push({
+        code: 'CLIENT_SECRET_INPUT',
         check: 'VS Code password input configured; value managed by client',
         ok: true,
       });
     else
       findings.push({
+        code: 'TOKEN_ENVIRONMENT',
         check: 'DIGITALOCEAN_API_TOKEN present (value never displayed)',
         ok: Boolean(env.DIGITALOCEAN_API_TOKEN?.trim()),
         remedy:
@@ -64,6 +68,7 @@ export async function diagnose(path, options, env = process.env) {
   }
   if (platform !== process.platform)
     findings.push({
+      code: 'TARGET_PLATFORM',
       check: 'Bundle targets a different OS; run doctor on the target OS',
       ok: false,
       remedy:

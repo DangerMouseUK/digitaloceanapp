@@ -1,6 +1,6 @@
 # Acceptance record
 
-Implementation target: 1.0.0-rc.1. Source review: 2026-09-27. This file separates completed static source review, automated checks, and user-assisted live acceptance. No DigitalOcean account was connected for implementation.
+Implementation target: 1.0.0-rc.2. Source review: 2026-09-27. This file separates source review, automated checks, author-guided synthetic walkthroughs, and user-assisted live acceptance. No DigitalOcean account was connected for implementation. All client/mode combinations below are experimental configuration templates; none is advertised as authenticated or behaviorally certified.
 
 | Target          | Source reviewed | Automated configuration coverage                    | Authenticated / skills live |
 | --------------- | --------------- | --------------------------------------------------- | --------------------------- |
@@ -14,6 +14,19 @@ Implementation target: 1.0.0-rc.1. Source review: 2026-09-27. This file separate
 | Windsurf        | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
 
 Automated results are recorded by the implementation PR and GitHub Actions for its exact commit. This table describes suite coverage, not an assertion that unrun CI jobs passed. Endpoint registry and package identifiers were checked against DigitalOcean v1.1.1; plugin schemas target Agent Plugins 1.0.0.
+
+## V2 synthetic walkthrough record
+
+On 2026-09-27, the authoring GPT-6 Codex session executed all 20 synthetic scenarios using the local fixture recorder. The [record](../tests/skills/evaluation.json) includes actual fixture-read calls, the one authorized simulated redeployment, responses, skill/scenario hashes, timestamps and per-expectation judgments. See the [reproduction instructions](../tests/skills/README.md).
+
+Eighteen scenarios have all rubric items marked as passing in self-review. Two remain partially unverified:
+
+- `audit-cleanup`: the fixture exposes age and missing usage, but no current status or dependencies. The response reports those gaps and performs no cleanup; the missing inspection cannot be marked complete.
+- `ambiguous-delete`: the response asks which of two matching apps is intended and performs no deletion. Inspection after target clarification requires another turn and is unverified.
+
+This is an author-guided walkthrough, not an independent blind model evaluation or proof of automatic skill discovery. The exact model build and desktop client version were not available; the record identifies the authoring session, OS and Node runtime. The documentation-fallback fixture replays a short paraphrase of a first-party page retrieved during implementation. No account authentication, credential retrieval, real redeployment or cloud mutation occurred.
+
+Independent evaluation, all authenticated compatibility cells, and the two follow-up branches remain pending. Neither these walkthroughs nor successful automated checks promote V1 to stable or complete the V2 release gate.
 
 ## Live acceptance procedure
 
