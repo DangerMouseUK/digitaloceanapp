@@ -308,7 +308,36 @@ test(
     );
     const install = join(temp, 'isolated install');
     await mkdir(install);
-    await writeFile(join(install, 'package.json'), '{"private":true}');
+    // npm ci caches tarballs but need not cache registry packuments. Seed the
+    // isolated install with the committed production dependency resolutions,
+    // rather than relying on metadata left by a developer's earlier npm install.
+    const locked = JSON.parse(
+      await readFile(new URL('package-lock.json', root), 'utf8'),
+    );
+    const isolated = {
+      name: 'digitaloceanapp-package-smoke',
+      version: '1.0.0',
+      private: true,
+      dependencies: locked.packages[''].dependencies,
+    };
+    await writeFile(join(install, 'package.json'), JSON.stringify(isolated));
+    await writeFile(
+      join(install, 'package-lock.json'),
+      JSON.stringify({
+        name: isolated.name,
+        version: isolated.version,
+        lockfileVersion: 3,
+        requires: true,
+        packages: {
+          '': isolated,
+          ...Object.fromEntries(
+            Object.entries(locked.packages).filter(
+              ([path, entry]) => path && !entry.dev,
+            ),
+          ),
+        },
+      }),
+    );
     const installed = spawnSync(
       process.execPath,
       [
