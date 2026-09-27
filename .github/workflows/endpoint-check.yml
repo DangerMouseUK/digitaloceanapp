@@ -1,0 +1,41 @@
+name: Check upstream endpoints
+on:
+  schedule:
+    - cron: '43 8 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: upstream-endpoint-check
+  cancel-in-progress: false
+jobs:
+  compare:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - id: compare
+        run: node scripts/check-endpoints.js --report
+      - if: steps.compare.outputs.drift == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const title = 'DigitalOcean upstream service registry drift';
+            const marker = '<!-- digitaloceanapp-upstream-drift -->';
+            const body = marker + '\n' + fs.readFileSync('dist/endpoint-drift.md', 'utf8');
+            const issues = await github.paginate(github.rest.issues.listForRepo, {...context.repo, state: 'open', creator: 'github-actions[bot]', per_page: 100});
+            const existing = issues.find(i => !i.pull_request && i.body?.startsWith(marker));
+            if (existing) {
+              if (existing.body !== body) await github.rest.issues.update({...context.repo, issue_number: existing.number, body});
+            } else {
+              await github.rest.issues.create({...context.repo, title, body});
+            }

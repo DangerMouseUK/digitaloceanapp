@@ -1,0 +1,41 @@
+{
+  "mcpServers": {
+    "digitalocean-accounts": {
+      "url": "https://accounts.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-droplets": {
+      "url": "https://droplets.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-databases": {
+      "url": "https://databases.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-doks": {
+      "url": "https://doks.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-networking": {
+      "url": "https://networking.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-volumes": {
+      "url": "https://volumes.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-nfs": {
+      "url": "https://nfs.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-insights": {
+      "url": "https://insights.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-docs": {
+      "url": "https://docs.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    }
+  },
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+}

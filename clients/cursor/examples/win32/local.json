@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "digitalocean": {
+      "command": "cmd",
+      "args": [
+        "/d",
+        "/s",
+        "/c",
+        "npx",
+        "-y",
+        "@digitalocean/mcp@1.1.1",
+        "--services",
+        "accounts,apps,insights,docs"
+      ],
+      "type": "stdio",
+      "env": {
+        "DIGITALOCEAN_API_TOKEN": "${env:DIGITALOCEAN_API_TOKEN}"
+      }
+    }
+  }
+}

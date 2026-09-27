@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "digitalocean": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@digitalocean/mcp@1.1.1",
+        "--services",
+        "accounts,apps,insights,docs,docr,spaces,networking,droplets,databases,doks,volumes,nfs,functions,marketplace,vector-databases,dedicated-inference,inference-modelcatalog,genai-evaluation,genai-custom-models,genai-batchinference,genai-inferencerouter"
+      ],
+      "type": "stdio"
+    }
+  },
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+}

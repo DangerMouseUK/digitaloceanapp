@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "digitalocean-accounts": {
+      "url": "https://accounts.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-apps": {
+      "url": "https://apps.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-insights": {
+      "url": "https://insights.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-docs": {
+      "url": "https://docs.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    }
+  },
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+}

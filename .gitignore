@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+output/
+*.tgz
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store

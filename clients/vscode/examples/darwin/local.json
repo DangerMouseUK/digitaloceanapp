@@ -1,0 +1,25 @@
+{
+  "servers": {
+    "digitalocean": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@digitalocean/mcp@1.1.1",
+        "--services",
+        "accounts,apps,insights,docs"
+      ],
+      "type": "stdio",
+      "env": {
+        "DIGITALOCEAN_API_TOKEN": "${input:digitalocean-token}"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "digitalocean-token",
+      "description": "DigitalOcean API token (stored by VS Code, not digitaloceanapp)",
+      "password": true
+    }
+  ]
+}

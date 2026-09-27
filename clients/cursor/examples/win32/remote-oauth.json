@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "digitalocean-accounts": {
+      "url": "https://accounts.mcp.digitalocean.com/mcp"
+    },
+    "digitalocean-apps": {
+      "url": "https://apps.mcp.digitalocean.com/mcp"
+    },
+    "digitalocean-insights": {
+      "url": "https://insights.mcp.digitalocean.com/mcp"
+    },
+    "digitalocean-docs": {
+      "url": "https://docs.mcp.digitalocean.com/mcp"
+    }
+  }
+}

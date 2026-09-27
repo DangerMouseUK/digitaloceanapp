@@ -1,0 +1,20 @@
+{
+  "connectors": [
+    {
+      "name": "digitalocean-accounts",
+      "url": "https://accounts.mcp.digitalocean.com/mcp"
+    },
+    {
+      "name": "digitalocean-apps",
+      "url": "https://apps.mcp.digitalocean.com/mcp"
+    },
+    {
+      "name": "digitalocean-insights",
+      "url": "https://insights.mcp.digitalocean.com/mcp"
+    },
+    {
+      "name": "digitalocean-docs",
+      "url": "https://docs.mcp.digitalocean.com/mcp"
+    }
+  ]
+}

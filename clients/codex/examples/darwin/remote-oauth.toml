@@ -1,0 +1,11 @@
+[mcp_servers.digitalocean-accounts]
+url = "https://accounts.mcp.digitalocean.com/mcp"
+
+[mcp_servers.digitalocean-apps]
+url = "https://apps.mcp.digitalocean.com/mcp"
+
+[mcp_servers.digitalocean-insights]
+url = "https://insights.mcp.digitalocean.com/mcp"
+
+[mcp_servers.digitalocean-docs]
+url = "https://docs.mcp.digitalocean.com/mcp"

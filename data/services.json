@@ -1,0 +1,345 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-09-27",
+  "localPackage": "@digitalocean/mcp@1.1.1",
+  "remoteSource": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+  "localSource": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/pkg/registry/registry.go",
+  "services": [
+    {
+      "key": "accounts",
+      "name": "Accounts",
+      "description": "Account details, balances, invoices and billing.",
+      "category": "account",
+      "remote": {
+        "url": "https://accounts.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "accounts",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "apps",
+      "name": "App Platform",
+      "description": "Applications, components, specifications and deployments.",
+      "category": "compute",
+      "remote": {
+        "url": "https://apps.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "apps",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "insights",
+      "name": "Insights",
+      "description": "Monitoring policies and uptime checks; available measurements depend on tools.",
+      "category": "observability",
+      "remote": {
+        "url": "https://insights.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "insights",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "docs",
+      "name": "Documentation",
+      "description": "Search and retrieve public DigitalOcean documentation.",
+      "category": "documentation",
+      "remote": {
+        "url": "https://docs.mcp.digitalocean.com/mcp",
+        "authentication": "none"
+      },
+      "local": {
+        "service": "docs",
+        "requiresToken": false
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "docr",
+      "name": "Container Registry",
+      "description": "Registry repositories, tags, manifests and subscriptions.",
+      "category": "storage",
+      "remote": {
+        "url": "https://docr.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "docr",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "spaces",
+      "name": "Spaces",
+      "description": "Spaces access-key and CDN management; bucket inventory may not be exposed.",
+      "category": "storage",
+      "remote": {
+        "url": "https://spaces.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "spaces",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "networking",
+      "name": "Networking",
+      "description": "DNS, firewalls, load balancers, reserved IPs and VPCs.",
+      "category": "networking",
+      "remote": {
+        "url": "https://networking.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "networking",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "droplets",
+      "name": "Droplets",
+      "description": "Virtual machines, images, sizes and actions.",
+      "category": "compute",
+      "remote": {
+        "url": "https://droplets.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "droplets",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "databases",
+      "name": "Managed Databases",
+      "description": "Database clusters, configuration and supporting resources.",
+      "category": "database",
+      "remote": {
+        "url": "https://databases.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "databases",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "doks",
+      "name": "Kubernetes",
+      "description": "Kubernetes clusters and node pools.",
+      "category": "compute",
+      "remote": {
+        "url": "https://doks.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "doks",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "volumes",
+      "name": "Volumes",
+      "description": "Block storage volumes, snapshots and actions.",
+      "category": "storage",
+      "remote": {
+        "url": "https://volumes.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "volumes",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "nfs",
+      "name": "NFS",
+      "description": "NFS file shares, snapshots and actions.",
+      "category": "storage",
+      "remote": {
+        "url": "https://nfs.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "nfs",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "functions",
+      "name": "Functions",
+      "description": "Serverless namespaces, actions, packages and activations.",
+      "category": "compute",
+      "remote": {
+        "url": "https://functions.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "functions",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "marketplace",
+      "name": "Marketplace",
+      "description": "Discover marketplace applications.",
+      "category": "catalog",
+      "remote": {
+        "url": "https://marketplace.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "marketplace",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "vector-databases",
+      "name": "Vector Databases",
+      "description": "Managed Weaviate vector database clusters.",
+      "category": "database",
+      "remote": {
+        "url": "https://vector-databases.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "vector-databases",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "dedicated-inference",
+      "name": "Dedicated Inference",
+      "description": "GPU inference instances for model serving.",
+      "category": "ai",
+      "remote": {
+        "url": "https://dedicated-inference.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "dedicated-inference",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "inference-modelcatalog",
+      "name": "Inference Model Catalog",
+      "description": "Inference models and model cards.",
+      "category": "ai",
+      "remote": {
+        "url": "https://inference-modelcatalog.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "inference-modelcatalog",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "genai-evaluation",
+      "name": "GenAI Evaluation",
+      "description": "Evaluation workflows, models and simulations.",
+      "category": "ai",
+      "remote": {
+        "url": "https://genai-evaluation.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "genai-evaluation",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "genai-custom-models",
+      "name": "GenAI Custom Models",
+      "description": "Imported custom models.",
+      "category": "ai",
+      "remote": {
+        "url": "https://genai-custom-models.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "genai-custom-models",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "genai-batchinference",
+      "name": "GenAI Batch Inference",
+      "description": "Asynchronous batch inference jobs.",
+      "category": "ai",
+      "remote": {
+        "url": "https://genai-batchinference.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "genai-batchinference",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    },
+    {
+      "key": "genai-inferencerouter",
+      "name": "GenAI Inference Router",
+      "description": "Inference model routers.",
+      "category": "ai",
+      "remote": {
+        "url": "https://genai-inferencerouter.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "genai-inferencerouter",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
+      "verifiedAt": "2026-09-27"
+    }
+  ]
+}
