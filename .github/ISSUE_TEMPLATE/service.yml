@@ -1,0 +1,27 @@
+name: DigitalOcean service issue
+description: Report missing service coverage or upstream tool behavior without secrets.
+body:
+  - type: markdown
+    attributes:
+      value: 'Do not include credentials, account data, app secrets or unredacted logs. Security vulnerabilities belong in private reporting, not this form.'
+  - type: input
+    id: environment
+    attributes:
+      label: Client, version, OS and digitaloceanapp version
+      description: Include the connection mode and selected preset/services if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: User goal and observed behavior
+      description: Include reproduction steps or a concrete example using synthetic data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior and evidence
+      description: Link first-party documentation where relevant; redact all sensitive values.
+    validations:
+      required: true

@@ -28,7 +28,10 @@
     ".codex-plugin/",
     ".mcp.json",
     "SECURITY.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "tests/skills/"
   ],
   "scripts": {
     "start": "node bin/digitaloceanapp.js",

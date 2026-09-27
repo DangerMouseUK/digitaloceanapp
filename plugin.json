@@ -3,9 +3,30 @@
   "name": "digitaloceanapp",
   "version": "1.0.0-rc.1",
   "description": "Evidence-based DigitalOcean workflows using official MCP services. No backend or credential custody.",
-  "author": { "name": "DangerMouseUK", "url": "https://github.com/DangerMouseUK" },
+  "author": {
+    "name": "DangerMouseUK",
+    "url": "https://github.com/DangerMouseUK"
+  },
   "homepage": "https://github.com/DangerMouseUK/digitaloceanapp",
   "repository": "https://github.com/DangerMouseUK/digitaloceanapp",
   "license": "MIT",
-  "keywords": ["digitalocean", "mcp", "infrastructure", "skills"]
+  "keywords": ["digitalocean", "mcp", "infrastructure", "skills"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "digitaloceanapp",
+        "shortDescription": "DigitalOcean workflows and official MCP connections",
+        "longDescription": "Review infrastructure, investigate deployments and explain costs using DigitalOcean's official MCP services. Independent open-source project with no backend or credential custody.",
+        "developerName": "DangerMouseUK",
+        "category": "Developer Tools",
+        "capabilities": ["Read", "Write"],
+        "websiteURL": "https://github.com/DangerMouseUK/digitaloceanapp",
+        "privacyPolicyURL": "https://github.com/DangerMouseUK/digitaloceanapp/blob/main/docs/privacy.md",
+        "defaultPrompt": [
+          "Show me my DigitalOcean account.",
+          "Review my App Platform apps without making changes."
+        ]
+      }
+    }
+  }
 }
