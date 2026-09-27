@@ -1,25 +1,16 @@
 # digitaloceanapp
 
-An open-source AI integration for DigitalOcean's official MCP servers.
+DigitalOcean tools and workflows for your AI assistant.
 
-**No backend. No database. No credential storage. Your AI client connects directly to DigitalOcean.**
+Connect your assistant to [DigitalOcean's official MCP servers](https://github.com/digitalocean-labs/mcp-digitalocean) to explore your infrastructure, review App Platform deployments, and investigate your cloud costs. digitaloceanapp supplies the client configuration and reusable instructions—called skills—that guide those tasks.
 
-`digitaloceanapp` does not operate a backend and does not receive your DigitalOcean credentials or account data. Your MCP client connects directly to DigitalOcean's official MCP servers, or to DigitalOcean's official MCP software running locally on your computer. Clients and DigitalOcean have their own data handling policies.
+Your assistant connects directly to DigitalOcean, either through its hosted servers or its official MCP package running on your computer. This project runs no backend and receives none of your credentials or account data.
 
-This is an independent open-source project, not an official DigitalOcean product. The development name does not imply trademark approval or endorsement.
+**Release candidate:** `1.0.0-rc.1`. Automated configuration and packaging checks pass on Windows, macOS, and Linux. Live authentication and client testing are [still pending](docs/acceptance.md).
 
-## What you get
+## Get started
 
-- A reviewed registry of 21 official services and four presets, with Core enabled by default.
-- Nine evidence-based skills for inventory, auditing, App Platform review, deployment troubleshooting/review, cost review, architecture explanation, documentation and safe operations.
-- Offline setup, validation and diagnostics for eight client targets.
-- Portable plugin packaging, generated examples and manual installation/removal guides.
-
-**Status: 1.0.0-rc.1.** Configuration and packaging have automated coverage. Authenticated client compatibility and behavioral acceptance remain pending; see the [acceptance matrix](docs/acceptance.md). This repository is the product; there is no web application to deploy.
-
-## Quick start
-
-Requires Node.js 22 or newer and npm. From a terminal:
+You'll need **Node.js 22 or newer**, npm, and an MCP-compatible AI client.
 
 ```sh
 git clone https://github.com/DangerMouseUK/digitaloceanapp.git
@@ -28,73 +19,94 @@ npm ci
 node bin/digitaloceanapp.js setup
 ```
 
-Setup asks for a client, connection mode, preset/custom services, platform and **new** output directory. It generates a bundle and `INSTALL.md`; it does not install it into your client. Follow that guide to merge the configuration and install the skills. Expected setup time is about five minutes once the client is ready; OAuth/client access can take longer.
+Choose your client, select **Remote OAuth** and the **Core** preset, then pick a new output directory. Setup creates the configuration, skills, and an `INSTALL.md` with instructions for your client.
 
-For a repeatable Codex/Core bundle:
+Follow that file to install the skills and merge the configuration into your client. Setup doesn't change your existing settings. Once installed, connect the servers and sign in through DigitalOcean when your client prompts you.
 
-```sh
-node bin/digitaloceanapp.js setup --client codex --mode remote-oauth --preset core --output ./my-do-bundle
-node bin/digitaloceanapp.js validate --path ./my-do-bundle
-node bin/digitaloceanapp.js doctor --path ./my-do-bundle
-```
+Try asking:
 
-The output parent must exist and the destination must not exist. Back up your client configuration before merging the generated fragment. Preserve unrelated entries. Configure client approvals, complete DigitalOcean OAuth through your client, then ask:
+> What do I have running on DigitalOcean?
 
-> Show me my DigitalOcean account.
-
-> Review my App Platform apps for operational issues and possible waste.
+> Review my App Platform apps. Are there any deployment problems or resources worth checking for oversizing?
 
 > Why did my latest deployment fail?
 
-The default Core preset connects Accounts, Apps, Insights and Documentation. Inventory must disclose services that are not connected. Metrics and billing detail depend on tools DigitalOcean actually exposes.
+The included skills also cover account audits, recent deployment history, infrastructure relationships, and official documentation research. Review and troubleshooting skills are written to inspect resources without changing them; resource changes require a specific request.
 
-## Connection modes
+## Choose a client
 
-**Remote OAuth (preferred):** the client talks to official HTTPS endpoints and opens DigitalOcean's authentication flow. There is no token prompt in this CLI. Documentation is public and needs no account token. See [remote mode](docs/remote-mode.md).
+| Client                      | Setup guide                                                      |
+| --------------------------- | ---------------------------------------------------------------- |
+| Codex                       | [Configuration and skills](clients/codex/README.md)              |
+| VS Code                     | [Configuration and skills](clients/vscode/README.md)             |
+| Cursor                      | [Configuration and skills](clients/cursor/README.md)             |
+| Claude Code                 | [Configuration and skills](clients/claude-code/README.md)        |
+| Claude Desktop              | [Connectors and local MCP](clients/claude-desktop/README.md)     |
+| Windsurf                    | [Configuration and skills](clients/windsurf/README.md)           |
+| ChatGPT                     | [Remote connections and plugin setup](clients/chatgpt/README.md) |
+| Other portable plugin hosts | [Plugin package](clients/plugin/README.md)                       |
 
-**Local MCP:** generate a bundle that launches the pinned official `@digitalocean/mcp@1.1.1` through npx with an explicit service list. Set `DIGITALOCEAN_API_TOKEN` in the client process environment or the client's supported secret input. The CLI never reads the token during setup or writes its value. See [local mode](docs/local-mode.md).
+Connection modes and skill installation vary by client. ChatGPT uses remote connections; Claude Desktop configuration is provided for Windows and macOS. See the [compatibility notes](docs/clients.md) for the current limits.
+
+## Select your services
+
+Start with the services you use. Connecting every server adds tools your assistant may not need.
+
+| Preset           | Includes                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------ |
+| `core` — default | Accounts, App Platform, Insights, Documentation                                                  |
+| `app-platform`   | Core plus Container Registry, Spaces, and Networking                                             |
+| `infrastructure` | Accounts, Droplets, Databases, Kubernetes, Networking, Volumes, NFS, Insights, and Documentation |
+| `full`           | All 21 services in the reviewed registry                                                         |
+
+You can also choose individual services. For example, to generate a Cursor configuration for App Platform and documentation:
 
 ```sh
-node bin/digitaloceanapp.js setup --client vscode --mode local --preset app-platform --output ./local-do-bundle
+node bin/digitaloceanapp.js setup --client cursor --services apps,docs --output ./do-config
 ```
 
-**Remote token:** available only on adapters with documented runtime secret references: Codex, VS Code, Cursor, Claude Code and Windsurf. Prefer OAuth. Never put real credentials in examples, commands, committed files or chat. See [authentication](docs/authentication.md).
+The output directory must be new, and its parent must already exist. Run `node bin/digitaloceanapp.js services` for the full list, or browse the [service reference](docs/supported-services.md).
 
-## Clients, presets and commands
+## Authentication
 
-Supported configuration targets: OpenAI portable plugin (`plugin`), ChatGPT, Codex, VS Code, Cursor, Claude Code, Claude Desktop and Windsurf. Availability varies by client, platform, plan and mode; consult [client instructions](docs/clients.md).
+**Remote OAuth is the default.** Your client opens DigitalOcean's sign-in flow; you don't give this project a token. Public Documentation MCP needs no account credentials.
 
-Presets: `core`, `app-platform`, `infrastructure`, `full`, or select services with `--services apps,docs`. Full is advanced: too many tools can reduce tool-selection accuracy. Presets and custom lists are mutually exclusive.
+For local MCP, select `--mode local`. The generated configuration runs the pinned official DigitalOcean package on your computer. Supply `DIGITALOCEAN_API_TOKEN` through the client's supported secret input or launching environment.
+
+Remote API-token configurations are also available for Codex, VS Code, Cursor, Claude Code, and Windsurf. Setup only writes references to credentials, never their values. See [authentication](docs/authentication.md), [remote mode](docs/remote-mode.md), or [local mode](docs/local-mode.md) for instructions.
+
+## Check your setup
 
 ```sh
-node bin/digitaloceanapp.js services
-node bin/digitaloceanapp.js services --json
-node bin/digitaloceanapp.js --help
+node bin/digitaloceanapp.js validate --path ./do-config
+node bin/digitaloceanapp.js doctor --path ./do-config
 ```
 
-For explicit client files, pass the expected selection. Validation defaults to Core/remote OAuth:
+`validate` checks the generated files. `doctor` also checks local prerequisites and whether a required token variable is present, without displaying it. Both run offline; confirm the actual connection in your client's MCP settings.
 
-```sh
-node bin/digitaloceanapp.js validate --path /path/to/mcp.json --client cursor --preset app-platform
-```
+Run `node bin/digitaloceanapp.js --help` for all options. If something isn't working, start with [troubleshooting](docs/troubleshooting.md).
 
-Generated bundles contain their own selection metadata. `doctor` checks this configuration, the Node/npx prerequisites and token-variable presence where appropriate. It does not contact DigitalOcean or prove the client can connect.
+## Permissions and privacy
 
-## Trust, safety and limitations
+DigitalOcean's tools can change and delete infrastructure. The skills guide your assistant's behavior, but **they cannot enforce read-only access**. Use appropriately scoped DigitalOcean access and your client's tool approval controls.
 
-Skills are behavioral guidance, **not a technical read-only boundary**. Direct MCP access can expose write and destructive tools. DigitalOcean authorization and client permissions ultimately govern operations. Audits do not authorize deletion. Use appropriately scoped access and client approvals; see [security](docs/security.md).
+The project has no telemetry, proxy, or account database. Your AI client and DigitalOcean handle your requests under their own policies. Resource coverage, metrics, and billing detail depend on the tools DigitalOcean exposes; missing data should be reported as missing, not treated as zero usage.
 
-No hosted infrastructure, telemetry, proxy, custom OAuth, account system or project-maintained resource history is included. Zero mandatory maintainer hosting cost does not mean DigitalOcean resources or AI client subscriptions are free. See [privacy](docs/privacy.md), [architecture](docs/architecture.md) and [limitations](docs/limitations.md).
+Read the [security model](docs/security.md), [privacy statement](docs/privacy.md), and [known limitations](docs/limitations.md). Report vulnerabilities through [private security reporting](SECURITY.md).
 
-## Development and distribution
+## Contributing
+
+Improvements to skills, client setup, and service coverage are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow. Coding agents should follow the repository's AGENTS.md.
 
 ```sh
 npm ci
-npm run generate
 npm run check
-npm pack
 ```
 
-The tarball contains the CLI, plugin, configurations, skills and documentation. It can be installed locally with npm to expose `digitaloceanapp`; no npm registry publication is implied. The GitHub release workflow runs only on a future version tag. Public plugin-directory publication is a separate process requiring provider cooperation where domain verification applies.
+Configuration and service-documentation changes are generated from the registry with `npm run generate`. The test suite covers client formats, CLI behavior, credential handling, and package installation. Live client checks are tracked separately in the [acceptance record](docs/acceptance.md).
 
-See [supported services](docs/supported-services.md), [maintenance](docs/maintenance.md), [CONTRIBUTING](CONTRIBUTING.md), [SECURITY](SECURITY.md), [CHANGELOG](CHANGELOG.md) and the [MIT license](LICENSE).
+For bugs and feature requests, [open an issue](https://github.com/DangerMouseUK/digitaloceanapp/issues). Please leave credentials and account data out of reports.
+
+## License
+
+[MIT](LICENSE). This is an independent community project, not an official DigitalOcean product or an endorsed integration.
