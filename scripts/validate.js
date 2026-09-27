@@ -67,6 +67,7 @@ for (const preset of Object.keys(presets))
 async function walk(directory) {
   const paths = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (directory === base && entry.name === 'output-digitaloceanapp') continue;
     if (
       ['.git', 'node_modules', 'output', 'dist', 'coverage'].includes(
         entry.name,

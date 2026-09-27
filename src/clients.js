@@ -1,5 +1,12 @@
 import { stringify } from 'smol-toml';
-import { registry, services, modes, platforms, manifest } from './catalog.js';
+import {
+  registry,
+  services,
+  modes,
+  platforms,
+  manifest,
+  requiresAuthentication,
+} from './catalog.js';
 
 export const clients = {
   plugin: {
@@ -55,6 +62,7 @@ export const clients = {
     file: 'claude_desktop_config.json',
     skills: 'skills',
     modes: ['remote-oauth', 'local'],
+    platforms: ['win32', 'darwin'],
     destination:
       'Remote: add each URL in Customize > Connectors > Add custom connector. Local: merge mcpServers into the desktop developer configuration (Windows: %APPDATA%/Claude/claude_desktop_config.json; macOS: ~/Library/Application Support/Claude/claude_desktop_config.json). Import skills manually using the client skill UI; availability depends on your plan.',
   },
@@ -70,6 +78,37 @@ export const clients = {
 
 export const json = (value) => JSON.stringify(value, null, 2) + '\n';
 
+export function supportedPlatforms(client) {
+  return clients[client].platforms ?? platforms;
+}
+
+export function installationDetails({ client, mode, platform, keys }) {
+  let destination = clients[client].destination;
+  let removal = `Remove only the DigitalOcean server entries you added and the skill folders you installed from ${clients[client].skills}/.`;
+  if (
+    client === 'vscode' &&
+    mode !== 'remote-oauth' &&
+    requiresAuthentication(keys, mode)
+  )
+    removal +=
+      ' Remove digitalocean-token from inputs only if no remaining server uses it.';
+  if (client === 'claude-desktop') {
+    destination =
+      mode === 'remote-oauth'
+        ? 'Add each URL from connectors.json using Customize > Connectors > Add custom connector. This file is an installation inventory, not a native client configuration.'
+        : `Back up and merge mcpServers into ${platform === 'win32' ? '%APPDATA%/Claude/claude_desktop_config.json' : '~/Library/Application Support/Claude/claude_desktop_config.json'}. Preserve unrelated server entries.`;
+    destination +=
+      ' Import the supplied skills through the client skill UI; availability depends on your plan.';
+    if (mode === 'remote-oauth')
+      removal =
+        'Remove the connectors you added through the client UI and the skills you imported.';
+  }
+  if (['plugin', 'chatgpt'].includes(client))
+    removal =
+      'Uninstall the plugin through the host plugin controls. If you installed endpoints and skills manually, remove only those connectors and imported skills.';
+  return { destination, removal };
+}
+
 export function assertCombination(client, mode, keys, platform) {
   if (!Object.hasOwn(clients, client))
     throw new Error('Unknown client. Run setup --help for choices.');
@@ -79,11 +118,15 @@ export function assertCombination(client, mode, keys, platform) {
     );
   if (!platforms.includes(platform))
     throw new Error('Platform must be win32, darwin, or linux.');
-  if (client === 'claude-desktop' && platform === 'linux')
+  if (!supportedPlatforms(client).includes(platform))
     throw new Error(
       'Claude Desktop is not supported on Linux. Choose Claude Code or another client.',
     );
-  if (!keys.length || keys.some((key) => !services.has(key)))
+  if (
+    !Array.isArray(keys) ||
+    !keys.length ||
+    keys.some((key) => !services.has(key))
+  )
     throw new Error('Unknown or empty service selection.');
   if (mode === 'local' && keys.some((key) => !services.get(key).local))
     throw new Error(
@@ -105,7 +148,7 @@ export function configuration({
 }) {
   assertCombination(client, mode, keys, platform);
   const servers = {};
-  const needsToken = keys.some((key) => services.get(key).local.requiresToken);
+  const needsToken = requiresAuthentication(keys, mode);
   if (client === 'claude-desktop' && mode === 'remote-oauth') {
     return {
       file: 'connectors.json',

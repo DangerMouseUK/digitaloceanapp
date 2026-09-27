@@ -1,4 +1,5 @@
 docs/prd.md
+/output-digitaloceanapp/
 schemas/
 package-lock.json
 configs/

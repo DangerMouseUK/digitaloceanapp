@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
 import { createInterface } from 'node:readline';
-import { clients } from '../src/clients.js';
+import {
+  clients,
+  assertCombination,
+  supportedPlatforms,
+} from '../src/clients.js';
 import {
   registry,
   presets,
   selectServices,
   fullWarning,
   modes,
-  platforms,
 } from '../src/catalog.js';
 import { createBundle } from '../src/bundle.js';
 import { validatePath } from '../src/validate.js';
@@ -33,6 +36,20 @@ No commands install plugins, modify client settings, authenticate or contact Dig
 `;
 
 async function interview(values) {
+  const validateAnswers = (options) => {
+    const client = options.client ?? 'codex';
+    // A placeholder platform validates explicit flags without choosing the user's target.
+    assertCombination(
+      client,
+      options.mode ?? 'remote-oauth',
+      selectServices(options),
+      options.platform ??
+        (Object.hasOwn(clients, client)
+          ? supportedPlatforms(client)[0]
+          : process.platform),
+    );
+  };
+  validateAnswers(values);
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   let cancelled = false;
   const cancel = () => {
@@ -52,29 +69,54 @@ async function interview(values) {
         resolve(answer.trim());
       });
     });
+  const askValid = async (question, fallback, validate) => {
+    while (true) {
+      const answer = (await ask(question)) || fallback;
+      try {
+        validate(answer);
+        return answer;
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+  };
   try {
     const options = { ...values };
-    options.client ??=
-      (await ask(`Client (${Object.keys(clients).join(', ')}) [codex]: `)) ||
-      'codex';
-    options.mode ??=
-      (await ask(`Mode (${modes.join(', ')}) [remote-oauth]: `)) ||
-      'remote-oauth';
+    options.client ??= await askValid(
+      `Client (${Object.keys(clients).join(', ')}) [codex]: `,
+      'codex',
+      (client) => validateAnswers({ ...options, client }),
+    );
+    options.mode ??= await askValid(
+      `Mode (${clients[options.client].modes.join(', ')}) [remote-oauth]: `,
+      'remote-oauth',
+      (mode) => validateAnswers({ ...options, mode }),
+    );
     if (options.preset === undefined && options.services === undefined) {
-      const selection =
-        (await ask(
-          'Preset (core, app-platform, infrastructure, full, custom) [core]: ',
-        )) || 'core';
+      const selection = await askValid(
+        `Preset (${Object.keys(presets).join(', ')}, custom) [core]: `,
+        'core',
+        (preset) => {
+          if (preset !== 'custom') validateAnswers({ ...options, preset });
+        },
+      );
       if (selection === 'custom')
-        options.services = await ask(
+        options.services = await askValid(
           'Comma-separated service keys (run services to list): ',
+          '',
+          (services) => validateAnswers({ ...options, services }),
         );
       else options.preset = selection;
     }
-    options.platform ??=
-      (await ask(
-        `Platform (${platforms.join(', ')}) [${process.platform}]: `,
-      )) || process.platform;
+    const targets = supportedPlatforms(options.client);
+    const defaultPlatform = targets.includes(process.platform)
+      ? process.platform
+      : targets[0];
+    options.platform ??= await askValid(
+      `Platform (${targets.join(', ')}) [${defaultPlatform}]: `,
+      defaultPlatform,
+      (platform) => validateAnswers({ ...options, platform }),
+    );
     options.output ??=
       (await ask('New output directory [./output-digitaloceanapp]: ')) ||
       './output-digitaloceanapp';
@@ -192,7 +234,9 @@ async function main() {
   } else {
     const result = await diagnose(values.path, values);
     for (const item of result.findings)
-      console.log(`${item.ok ? 'OK' : 'FAIL'}: ${item.check}`);
+      console.log(
+        `${item.ok ? 'OK' : 'FAIL'}: ${item.check}${!item.ok && item.remedy ? '\n  ' + item.remedy : ''}`,
+      );
     console.log(`Services: ${result.services.join(', ')}\n${result.note}`);
     if (result.findings.some((item) => !item.ok)) process.exitCode = 1;
   }

@@ -14,6 +14,15 @@ export const platforms = ['win32', 'darwin', 'linux'];
 export const fullWarning =
   'Advanced: Full enables many tools and may reduce tool-selection accuracy.';
 
+export function requiresAuthentication(keys, mode) {
+  return keys.some((key) => {
+    const service = services.get(key);
+    return mode === 'local'
+      ? service.local?.requiresToken === true
+      : service.remote.authentication !== 'none';
+  });
+}
+
 export function selectServices({ preset, services: selection } = {}) {
   if (preset !== undefined && selection !== undefined)
     throw new Error('Choose --preset or --services, not both.');

@@ -8,11 +8,17 @@ import {
 } from 'node:fs/promises';
 import { dirname, resolve, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { root, manifest, fullWarning, services } from './catalog.js';
+import {
+  root,
+  manifest,
+  fullWarning,
+  requiresAuthentication,
+} from './catalog.js';
 import {
   clients,
   configuration,
   compatibilityManifest,
+  installationDetails,
   json,
 } from './clients.js';
 
@@ -31,7 +37,63 @@ export async function skillFiles() {
 
 export function installationGuide(options) {
   const { client, mode, keys, platform } = options;
-  return `# digitaloceanapp installation bundle\n\nClient: ${clients[client].name}. Mode: ${mode}. Platform: ${platform}.\n\nServices: ${keys.join(', ')}.\n\n${keys.length > 9 ? fullWarning + '\n\n' : ''}## Install\n\n1. ${clients[client].destination}\n2. Back up your existing client configuration yourself before merging. Preserve unrelated server entries and existing skill folders. Do not replace a whole configuration with this fragment.\n3. ${!keys.some((key) => services.get(key).local.requiresToken) ? 'The selected public documentation tools require no DigitalOcean token. Do not configure a token solely for documentation.' : mode === 'remote-oauth' ? 'Connect through the client and complete DigitalOcean OAuth for each protected endpoint. Documentation needs no DigitalOcean token.' : client === 'vscode' ? 'Enter the token only in VS Code’s password input when it starts the connection.' : 'Set DIGITALOCEAN_API_TOKEN outside this bundle in the environment of the process launching your client. Restart the client after changing its environment. Never paste a token into these files or a chat.'}\n4. ${mode === 'local' ? 'Ensure Node.js and npx are installed and available to the client. The client will download and run the pinned official @digitalocean/mcp package from npm. This generator does not install or launch it. Desktop GUI environment inheritance must be checked on your OS; do not assume shell-profile variables reach a GUI app.' : 'The client connects directly to the selected DigitalOcean HTTPS endpoints. No digitaloceanapp server is involved.'}\n5. ${['plugin', 'chatgpt'].includes(client) ? 'Install/import this directory as a portable plugin where the host supports it. Local stdio is only for local-capable plugin hosts, never ChatGPT cloud. Availability depends on host version, account and workspace policy. If plugin import is unavailable, manually connect the listed endpoints and load the supplied skills using the host’s supported skill controls.' : 'The supplied skill folders must also be installed or manually imported; an MCP configuration alone does not activate workflows.'}\n\n## Verify\n\nRun digitaloceanapp validate --path . from this bundle (or invoke the repository CLI by absolute path). Use your client’s MCP status view, confirm the selected services and skills, then ask “Show me my DigitalOcean account.” A useful result should state scope and missing coverage. OAuth and real account behavior are unverified until this check succeeds. Review client tool approvals before use.\n\n## Remove\n\nRemove only the digitaloceanapp server entries you added, its VS Code input if unused, and its installed skill folders. Uninstall the plugin or remove remote connectors through the client UI where applicable. Revoke DigitalOcean authorization separately if desired. Deleting this generated directory does not remove configuration you copied elsewhere.\n\n## Trust and limitations\n\nThe maintainer receives no credentials or account data through normal use. Your client and DigitalOcean have their own data policies. Skills guide behavior; they cannot enforce read-only access or intercept tools. Use appropriate DigitalOcean permissions and client approvals. No configuration here automatically approves tools. Client/account compatibility is pending live acceptance.\n`;
+  const { destination, removal } = installationDetails(options);
+  const protectedServices = requiresAuthentication(keys, mode);
+  const authentication = !protectedServices
+    ? 'The selected public documentation tools require no DigitalOcean token. Do not configure a token solely for documentation.'
+    : mode === 'remote-oauth'
+      ? 'Connect through the client and complete DigitalOcean OAuth for each protected endpoint. Documentation needs no DigitalOcean token.'
+      : client === 'vscode'
+        ? 'Enter the token only in VS Code’s password input when it starts the connection.'
+        : 'Set DIGITALOCEAN_API_TOKEN outside this bundle in the environment of the process launching your client. Restart the client after changing its environment. Never paste a token into these files or a chat.';
+  const question = keys.includes('accounts')
+    ? 'Show me my DigitalOcean account.'
+    : keys.includes('apps')
+      ? 'List my DigitalOcean App Platform apps without changing them.'
+      : keys.includes('docs')
+        ? 'Find official DigitalOcean documentation for App Platform health checks.'
+        : `Show the available read-only tools for the selected DigitalOcean services (${keys.join(', ')}). State missing coverage.`;
+  return `# digitaloceanapp installation bundle
+
+Client: ${clients[client].name}. Mode: ${mode}. Platform: ${platform}.
+
+Services: ${keys.join(', ')}.
+
+${keys.length > 9 ? fullWarning + '\n\n' : ''}## Install
+
+1. Back up existing client settings before merging. Preserve unrelated server entries and skill folders; do not replace a whole configuration with this fragment.
+2. ${destination}
+3. ${authentication}
+4. ${mode === 'local' ? 'Ensure Node.js and npx are installed and available to the client. The client will download and run the pinned official @digitalocean/mcp package from npm. This generator does not install or launch it. Desktop GUI environment inheritance must be checked on your OS; do not assume shell-profile variables reach a GUI app.' : 'The client connects directly to the selected DigitalOcean HTTPS endpoints. No digitaloceanapp server is involved.'}
+5. ${['plugin', 'chatgpt'].includes(client) ? 'If plugin import is unavailable, manually connect the listed endpoints and load the supplied skills using the host’s supported controls. Availability depends on host version, account and workspace policy.' : `Install or import the supplied skills from ${clients[client].skills}/; an MCP configuration alone does not activate workflows.`}
+
+## Verify
+
+From your repository clone, replace the example bundle path with your generated directory:
+
+\`\`\`sh
+node bin/digitaloceanapp.js validate --path "../My DigitalOcean bundle"
+node bin/digitaloceanapp.js doctor --path "../My DigitalOcean bundle"
+\`\`\`
+
+Alternatively, from the bundle directory, use an absolute path to the repository CLI (replace the example path):
+
+\`\`\`sh
+node "/path/to/digitaloceanapp/bin/digitaloceanapp.js" validate --path .
+\`\`\`
+
+On Windows, the same command accepts a quoted path such as \`"C:/Projects/digitaloceanapp/bin/digitaloceanapp.js"\`. If the CLI is installed on PATH, use \`digitaloceanapp validate --path .\`.
+
+These checks run offline. Use your client’s MCP status view, confirm the selected services and skills, then ask “${question}” A useful result should state scope and missing coverage. ${protectedServices ? 'Authentication and real account access require a separate successful client connection.' : 'Public documentation verification does not establish account access.'} Review client tool approvals before use.
+
+## Remove
+
+${removal} ${protectedServices ? 'Revoke DigitalOcean authorization separately if desired. ' : ''}Deleting this generated directory does not remove configuration you copied elsewhere.
+
+## Trust and limitations
+
+The maintainer receives no credentials or account data through normal use. Your client and DigitalOcean have their own data policies. Skills guide behavior; they cannot enforce read-only access or intercept tools. Use appropriate DigitalOcean permissions and client approvals. No configuration here automatically approves tools. Client/account compatibility is pending live acceptance.
+`;
 }
 
 export async function bundleFiles(options) {
