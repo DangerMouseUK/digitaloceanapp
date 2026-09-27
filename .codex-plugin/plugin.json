@@ -1,6 +1,6 @@
 {
   "name": "digitaloceanapp",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "Evidence-based DigitalOcean workflows using official MCP services. No backend or credential custody.",
   "author": {
     "name": "DangerMouseUK",

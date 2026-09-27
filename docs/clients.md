@@ -1,6 +1,6 @@
 # Client compatibility
 
-Source review date: 2026-09-27. Automated adapter coverage and live authentication are separate. The bundled examples use Core; setup can generate every supported preset/custom selection.
+Source review date: 2026-09-27. The combinations below are experimental configuration templates, not authenticated compatibility claims. Automated adapter coverage and live authentication are separate. The bundled examples use Core; setup can generate every supported preset/custom selection.
 
 | Target                 | Modes                                          | Instructions                                 |
 | ---------------------- | ---------------------------------------------- | -------------------------------------------- |

@@ -124,8 +124,9 @@ export async function bundleFiles(options) {
   return files;
 }
 
-export async function createBundle(options, output) {
+export async function createBundle(options, output, migrationGuide) {
   const files = await bundleFiles(options);
+  if (migrationGuide !== undefined) files.set('MIGRATE.md', migrationGuide);
   const directory = resolve(output);
   // Exclusive directory creation avoids touching any existing client configuration.
   try {

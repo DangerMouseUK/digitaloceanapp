@@ -5,6 +5,7 @@ import {
   clients,
   assertCombination,
   supportedPlatforms,
+  installationDetails,
 } from '../src/clients.js';
 import {
   registry,
@@ -16,22 +17,32 @@ import {
 import { createBundle } from '../src/bundle.js';
 import { validatePath } from '../src/validate.js';
 import { diagnose } from '../src/doctor.js';
+import { diagnosticReport, diagnosticFailure } from '../src/diagnostics.js';
+import { planUpgrade, upgradeSummary, upgradeBundle } from '../src/upgrade.js';
+
+const presetGuidance =
+  'Choose core for general account work (default), app-platform for deployments and app dependencies, infrastructure for databases/Kubernetes/Droplets/networking, or full for all reviewed services.';
+let jsonCommand;
+let failureCode = 'INVALID_ARGUMENTS';
 
 const help = `digitaloceanapp — offline configuration and workflow bundles
 
   setup [--client CLIENT] [--mode MODE] [--preset PRESET | --services a,b]
         [--output NEW_DIRECTORY] [--platform win32|darwin|linux] [--interactive]
   validate --path BUNDLE_OR_CONFIG [--client CLIENT] [--mode MODE]
-           [--preset PRESET | --services a,b] [--platform PLATFORM]
-  doctor --path BUNDLE_OR_CONFIG [same validation options]
+           [--preset PRESET | --services a,b] [--platform PLATFORM] [--json]
+  doctor --path BUNDLE_OR_CONFIG [same validation options] [--json]
+  upgrade --path OLD_BUNDLE [--output NEW_DIRECTORY] [--dry-run]
   services [--json]
 
 Clients: ${Object.keys(clients).join(', ')}
 Modes: ${modes.join(', ')}
 Presets: ${Object.keys(presets).join(', ')} (default: core)
+${presetGuidance}
 Default mode: remote-oauth. Default platform: current OS.
 Explicit config validation defaults to Core/remote-oauth; specify a different selection.
 Setup requires a client in noninteractive use. Default output: ./output-digitaloceanapp.
+Upgrade requires --output unless --dry-run is used. It preserves the original bundle.
 No commands install plugins, modify client settings, authenticate or contact DigitalOcean.
 `;
 
@@ -93,6 +104,7 @@ async function interview(values) {
       (mode) => validateAnswers({ ...options, mode }),
     );
     if (options.preset === undefined && options.services === undefined) {
+      console.log(presetGuidance);
       const selection = await askValid(
         `Preset (${Object.keys(presets).join(', ')}, custom) [core]: `,
         'core',
@@ -129,6 +141,10 @@ async function interview(values) {
 }
 
 async function main() {
+  // Identify the reporting command before parsing so argument errors also return JSON.
+  const args = process.argv.slice(2);
+  if (args.includes('--json'))
+    jsonCommand = args.find((arg) => ['validate', 'doctor'].includes(arg));
   let parsed;
   try {
     parsed = parseArgs({
@@ -144,7 +160,7 @@ async function main() {
           'platform',
           'path',
         ].map((key) => [key, { type: 'string' }]),
-        ...['help', 'json', 'interactive'].map((key) => [
+        ...['help', 'json', 'interactive', 'dry-run'].map((key) => [
           key,
           { type: 'boolean' },
         ]),
@@ -157,6 +173,10 @@ async function main() {
   }
   const { positionals } = parsed;
   let { values } = parsed;
+  jsonCommand =
+    values.json && ['validate', 'doctor'].includes(positionals[0])
+      ? positionals[0]
+      : undefined;
   if (values.help || !positionals.length) {
     console.log(help);
     return;
@@ -174,8 +194,25 @@ async function main() {
       'platform',
       'interactive',
     ],
-    validate: ['path', 'client', 'mode', 'preset', 'services', 'platform'],
-    doctor: ['path', 'client', 'mode', 'preset', 'services', 'platform'],
+    validate: [
+      'path',
+      'client',
+      'mode',
+      'preset',
+      'services',
+      'platform',
+      'json',
+    ],
+    doctor: [
+      'path',
+      'client',
+      'mode',
+      'preset',
+      'services',
+      'platform',
+      'json',
+    ],
+    upgrade: ['path', 'output', 'dry-run'],
     services: ['json'],
   };
   if (
@@ -208,13 +245,18 @@ async function main() {
       throw new Error('Noninteractive setup requires --client. Run --help.');
     const keys = selectServices(values);
     if (values.preset === 'full') console.error(fullWarning);
+    const selected = {
+      client: values.client,
+      mode: values.mode ?? 'remote-oauth',
+      keys,
+      platform: values.platform ?? process.platform,
+    };
+    assertCombination(selected.client, selected.mode, keys, selected.platform);
+    console.log(
+      `${presetGuidance}\nClient: ${clients[selected.client].name}. Mode: ${selected.mode}. Platform: ${selected.platform}.\nServices: ${keys.join(', ')}\nInstall: ${installationDetails(selected).destination}\nSkills: ${clients[selected.client].skills}/. Follow INSTALL.md to install and verify in your client.\nAuthentication remains unverified.`,
+    );
     const output = await createBundle(
-      {
-        client: values.client,
-        mode: values.mode ?? 'remote-oauth',
-        keys,
-        platform: values.platform ?? process.platform,
-      },
+      selected,
       values.output ?? './output-digitaloceanapp',
     );
     console.log(
@@ -226,13 +268,38 @@ async function main() {
     throw new Error(
       'Provide --path to a bundle directory or client configuration file.',
     );
+  if (command === 'upgrade') {
+    if (!values['dry-run'] && !values.output)
+      throw new Error('Upgrade requires --output NEW_DIRECTORY or --dry-run.');
+    const plan = await planUpgrade(values.path);
+    console.log(upgradeSummary(plan));
+    if (values['dry-run']) console.log('Dry run: no files written.');
+    else {
+      const output = await upgradeBundle(plan, values.output);
+      console.log(
+        `Generated replacement bundle: ${output}\nRead MIGRATE.md before manual installation.`,
+      );
+    }
+    return;
+  }
+  failureCode = 'CONFIGURATION_INVALID';
   if (command === 'validate') {
     const result = await validatePath(values.path, values);
+    if (values.json) {
+      console.log(JSON.stringify(diagnosticReport(command, result), null, 2));
+      return;
+    }
     console.log(
       `Configuration valid. Services: ${result.services.join(', ')}. Authentication: unverified.`,
     );
   } else {
     const result = await diagnose(values.path, values);
+    if (values.json) {
+      const report = diagnosticReport(command, result);
+      console.log(JSON.stringify(report, null, 2));
+      if (!report.ok) process.exitCode = 1;
+      return;
+    }
     for (const item of result.findings)
       console.log(
         `${item.ok ? 'OK' : 'FAIL'}: ${item.check}${!item.ok && item.remedy ? '\n  ' + item.remedy : ''}`,
@@ -246,10 +313,15 @@ try {
   await main();
 } catch (error) {
   // Only our controlled errors reach the user; filesystem/runtime details can include secrets.
-  console.error(
-    error.code || error instanceof TypeError
-      ? 'Operation failed. Check input, filesystem access and configuration. No sensitive details displayed.'
-      : error.message,
-  );
+  if (jsonCommand)
+    console.log(
+      JSON.stringify(diagnosticFailure(jsonCommand, failureCode), null, 2),
+    );
+  else
+    console.error(
+      error.code || error instanceof TypeError
+        ? 'Operation failed. Check input, filesystem access and configuration. No sensitive details displayed.'
+        : error.message,
+    );
   process.exitCode ||= 1;
 }

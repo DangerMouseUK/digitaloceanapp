@@ -30,7 +30,7 @@ const run = (args, extra = {}) =>
     ...extra,
   });
 
-test('each client generates a complete bundle with all nine skills and validates', async () => {
+test('each client generates a complete bundle with all thirteen skills and validates', async () => {
   for (const client of Object.keys(clients))
     for (const mode of clients[client].modes) {
       const target = join(temp, `${client}-${mode}`);
@@ -42,7 +42,7 @@ test('each client generates a complete bundle with all nine skills and validates
       assert.deepEqual(result.services, selectServices());
       assert.equal(
         (await readdir(join(target, clients[client].skills))).length,
-        9,
+        13,
       );
       assert.ok(
         (await readFile(join(target, 'INSTALL.md'), 'utf8')).includes('Remove'),
@@ -99,6 +99,12 @@ test('CLI setup, validate, services and doctor work from an unrelated directory'
     { cwd: temp, env },
   );
   assert.equal(setup.status, 0, setup.stderr);
+  assert.ok(
+    setup.stdout.indexOf('Services: apps, docs') <
+      setup.stdout.indexOf('Generated bundle:'),
+  );
+  assert.ok(setup.stdout.includes('Install: Merge the MCP tables'));
+  assert.ok(setup.stdout.includes('Mode: local'));
   assert.equal(run(['validate', '--path', out], { cwd: temp }).status, 0);
   const doctor = run(['doctor', '--path', out], { cwd: temp, env });
   assert.equal(doctor.status, 0, doctor.stdout + doctor.stderr);

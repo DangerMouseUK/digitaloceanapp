@@ -118,16 +118,25 @@ for (const path of await walk(base)) {
     }
   }
 }
-assert.equal(skillCount, 9);
+assert.equal(skillCount, 13);
 const evaluation = readJson('tests/skills/scenarios.json');
-assert.equal(evaluation.status, 'not-executed');
+assert.equal(evaluation.status, 'author-walkthrough-recorded');
+assert.equal(
+  new Set(evaluation.scenarios.map((scenario) => scenario.id)).size,
+  evaluation.scenarios.length,
+);
 for (const name of skillNames)
   assert.ok(
     evaluation.scenarios.some((s) => s.skill === name),
     `Missing evaluation case for ${name}`,
   );
 for (const scenario of evaluation.scenarios)
-  assert.ok(scenario.prompt && scenario.fixture && scenario.expect.length >= 3);
+  assert.ok(
+    scenario.id &&
+      scenario.prompt &&
+      scenario.fixture &&
+      scenario.expect.length >= 3,
+  );
 console.log(
-  'Manifests, registry, skills, scenarios, YAML, local documentation links and secret patterns validated. Behavioral scenarios have not been executed.',
+  'Manifests, registry, skills, scenarios, YAML, local documentation links and secret patterns validated. Recorded author walkthroughs are separate; structural checks do not execute a model or verify live clients.',
 );

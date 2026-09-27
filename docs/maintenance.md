@@ -22,6 +22,8 @@ The default root `output-digitaloceanapp/` setup directory is excluded from Git,
 
 After live acceptance, update package/lockfile, portable manifest and changelog versions together, regenerate compatibility metadata, and run checks. Review the npm tarball with `npm pack --dry-run` and the release archive before publication. The tag workflow checks that tag and metadata versions match and packages the repository's declared product artifacts.
 
+For a prerelease with bundle changes, retain reviewed source versions in the upgrade reader and add a historical bundle fixture when its contract changes. Keep authenticated claims experimental until the live gate is met. Changes to skills or behavioral fixtures require a new recorded walkthrough; existing evidence hashes must not be updated merely to make integrity checks pass.
+
 A `v*` tag triggers the release workflow; prerelease versions remain GitHub prereleases. This implementation does not create a tag, merge its review PR, publish to npm or submit a plugin-directory listing. Public listing needs separate provider/domain verification. No workflow deploys infrastructure.
 
 GitHub private vulnerability reporting, secret scanning and push protection should remain enabled where available. Dependabot covers npm and GitHub Actions. Repository settings may depend on account policy; settings changes and unavailable features should be reported explicitly.
