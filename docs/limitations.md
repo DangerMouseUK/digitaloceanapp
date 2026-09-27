@@ -1,0 +1,12 @@
+# Limitations
+
+- This release candidate has no completed authenticated compatibility matrix. Account access, OAuth, skill activation and behavior require the live acceptance gate.
+- Public Plugin Directory submission and local/personal plugin compatibility are separate. This maintainer cannot verify control of DigitalOcean's MCP domains.
+- Every client has different formats, secret handling, installation controls and feature availability. ChatGPT cloud does not run the local stdio bundle. Claude Desktop Linux is rejected.
+- Setup generates a bundle; the user installs it manually. It does not merge, back up or remove personal client configuration.
+- A supported endpoint does not guarantee a particular tool. Insights can expose monitoring policies without app CPU/memory timeseries. Spaces can expose access keys/CDNs without a complete bucket inventory.
+- Cost review has no project-maintained history. It uses available invoices, prices and measurements and reports observation periods, missing peaks and estimates.
+- Static tests check structure and scenarios, not AI behavior. Skills cannot guarantee non-destructive execution; use client approvals and DigitalOcean permissions.
+- Offline doctor checks cannot establish package startup, OAuth success, GUI environment inheritance, client subscription eligibility or account access.
+- Validation is scoped to DigitalOcean entries and expected selections. It is not a validator for every third-party MCP server or every optional client setting.
+- Ordinary CI has no DigitalOcean credentials and never performs cloud mutations. No test account or billable resource is provisioned.
