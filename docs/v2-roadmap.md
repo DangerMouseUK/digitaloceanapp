@@ -1,6 +1,6 @@
 # V2: workflows and bundle upgrades
 
-V2 is a product milestone. The current implementation remains a release candidate, `1.0.0-rc.2`; it does not promote the original V1 candidate to stable or claim authenticated compatibility.
+V2 is a product milestone first implemented in release candidate `1.0.0-rc.2`; it did not promote the original V1 candidate to stable or claim authenticated compatibility. The current [V3 milestone](v3-roadmap.md) targets `1.0.0-rc.3` and records independent-executor evidence while preserving the pending live gate.
 
 ## Implemented stages
 

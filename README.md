@@ -6,7 +6,7 @@ Connect your assistant to [DigitalOcean's official MCP servers](https://github.c
 
 Your assistant connects directly to DigitalOcean, either through its hosted servers or its official MCP package running on your computer. This project runs no backend and receives none of your credentials or account data.
 
-**Release candidate:** `1.0.0-rc.2`. Client configurations are experimental templates with automated format and packaging coverage. No authenticated client/mode combination is certified yet; live authentication and client testing are [still pending](docs/acceptance.md). The [V2 roadmap](docs/v2-roadmap.md) tracks the new workflows and upgrade path.
+**Release candidate:** `1.0.0-rc.3`. Client configurations are experimental templates with automated format and packaging coverage. Synthetic workflows have been exercised by a separately authorized evaluator, with [results and limits recorded](docs/acceptance.md). No authenticated client/mode combination is certified yet; live client testing remains pending. The [V3 roadmap](docs/v3-roadmap.md) tracks deployment preflight, recovery reviews, proposed-change costs and easier setup.
 
 ## Get started
 
@@ -23,6 +23,14 @@ Choose your client, select **Remote OAuth** and the **Core** preset, then pick a
 
 Follow that file to install the skills and merge the configuration into your client. Setup doesn't change your existing settings. Once installed, connect the servers and sign in through DigitalOcean when your client prompts you.
 
+Preview the services, skills, installation destinations and authentication steps first:
+
+```sh
+node bin/digitaloceanapp.js setup --client codex --dry-run
+```
+
+Add `--json` for a structured preview. Dry runs write no files and do not check the proposed output directory's writability.
+
 Try asking:
 
 > What do I have running on DigitalOcean?
@@ -34,6 +42,8 @@ Try asking:
 The included skills also cover account audits, recent deployment history, infrastructure relationships, and official documentation research. Review and troubleshooting skills are written to inspect resources without changing them; resource changes require a specific request.
 
 Dedicated database, Kubernetes, Droplet and networking reviews help investigate infrastructure concerns. Select the **infrastructure** preset for those services. Try “Why can app-a not reach db-a?” or “Review cluster-a and report what you can verify about its node pools.” Tools and evidence available through your client determine coverage.
+
+V3 also supports “Check this app before release,” “Review backups for these databases and Droplets,” and “What would adding another app instance cost?” These reviews identify evidence gaps without deploying, restoring or resizing resources. Findings stay in your AI client; the utility stores configuration and skills only.
 
 ## Choose a client template
 
@@ -100,6 +110,8 @@ node bin/digitaloceanapp.js upgrade --path "../My old bundle" --output "../My ne
 ```
 
 The upgrade preserves your selected services, client, platform and connection mode. Read the generated `MIGRATE.md` and review flagged differences and customizations before manually installing. Your old bundle and client settings remain intact. See [upgrading](docs/upgrading.md) for accepted versions and review limits.
+
+V3 bundles record fingerprints of generated files so later upgrades can distinguish release changes from local customizations. Earlier bundles still need manual comparison. Add `--json` to an upgrade dry run for a redacted change list.
 
 ## Permissions and privacy
 

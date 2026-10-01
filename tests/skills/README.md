@@ -2,7 +2,11 @@
 
 `scenarios.json` contains synthetic prompts, fixtures and behavioral rubrics. Structural validation does not execute a model. The local recorder makes fixture reads and simulated writes inspectable without contacting DigitalOcean, invoking a model API or using credentials.
 
-The checked-in [evaluation record](evaluation.json) contains the 20 author-guided walkthroughs for `1.0.0-rc.2`. Eighteen have fully passing self-reviewed rubrics; two have unverified follow-up checks. [Acceptance](../../docs/acceptance.md) explains their limits. An automated integrity check ties the record to the current skills and fixtures; it does not grade model behavior.
+The checked-in [V2 evaluation record](evaluation.json) preserves 20 author-guided walkthroughs for `1.0.0-rc.2`. Eighteen have fully passing self-reviewed rubrics; two retain their original unverified follow-up checks. The [V3 author record](v3-evaluation.json) contains 12 current walkthroughs for `1.0.0-rc.3`: the 11 added scenarios plus the cost-window rerun. Both V2 follow-ups have passing V3 author reviews.
+
+The [independent-executor record](v3-independent-evaluation.json) covers all 31 scenarios in a separately authorized agent context without author answers/rubrics. The author subsequently graded actual responses and fixture traces: 29 have all expectations passing; the original audit-cleanup and ambiguous-delete cases retain one unverified expectation each because their fixtures lack the necessary state. Their supplied follow-ups pass. Execution is independent; grading is by the author, and authenticated/client-discovery acceptance remains pending.
+
+The suite contains 31 scenarios across 15 skills. An automated integrity check ties V3 records to current skills/fixtures and historical V2 records to their original source, including the [preserved V2 cost skill](../fixtures/v2-cost-review.md). It does not grade model behavior. [Acceptance](../../docs/acceptance.md) explains the remaining gates.
 
 Run these commands from the repository; the parent of the new run directory must exist:
 
@@ -39,7 +43,9 @@ node scripts/evaluate-skills.js finish ../skill-run inventory-pagination ../resp
 
 `evaluation.json` records timestamps, skill/scenario SHA-256 hashes, requested fixture fields, returned values, responses and rubric judgments. The recorder validates the shape of judgments, not their truth. Only use synthetic data. To exercise the authorized timeout scenario, use `simulate-write RUN_DIRECTORY redeploy-timeout redeploy app-a`, then inspect `subsequentState`; this only records a mock action and never executes a command or contacts a service.
 
-Walkthroughs recorded here are author-guided and self-reviewed in the current Codex session. They are not independent blind evaluations, tests of automatic skill routing, or authenticated client acceptance. A future independent evaluation must use a separate explicitly authorized evaluator and record its actual model/client version and tool trace. Ordinary CI only validates structure and recorder mechanics.
+The recorder defaults to author-guided, self-reviewed metadata. The V2 and V3 author records are not independent evaluations, tests of automatic skill routing, or authenticated client acceptance. The separate executor record documents the user-approved evaluator and author grading explicitly. Ordinary CI only validates structure, recorded-evidence integrity and recorder mechanics.
+
+For independent execution, give the authorized evaluator only the requested skill, scenario prompt and raw synthetic tool fixture interface. Withhold author responses and grading expectations. Collect actual calls and responses before a separate rubric review; document who evaluated and who graded, along with the model/client build where available. The supplied follow-up fixtures contain brief previous-turn results; disclose that limitation. Do not relabel author responses as independent. Keep executor runs separate until provenance has been reviewed, and set `independentGrading: false` when the author grades them. Only synthetic data may be stored in development records.
 
 ## Optional Python structural check
 

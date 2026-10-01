@@ -1,6 +1,6 @@
 ---
 name: cost-review
-description: Review DigitalOcean billing and potential savings, or compare the cost of a proposed configuration change, separating invoice facts, calculations and projections without changing resources.
+description: Review DigitalOcean billing and resource capacity for potential savings, separating invoice facts, calculations and estimates without resizing or deleting resources.
 ---
 
 # Cost Review
@@ -30,16 +30,6 @@ Discover the tools actually available in the current client; upstream tool names
 8. Rank candidates by evidence quality and potential impact, keeping unquantified opportunities separate from calculated savings. For each candidate show current configuration, available utilization period/peaks, pricing source/date, assumptions, dependencies and the next measurement needed. If demand, pricing or redundancy requirements are unknown, prioritize obtaining that evidence over recommending a smaller plan.
 
 9. Compare like periods and units. Show quantity × rate × billed duration for a cost calculation, and current cost minus proposed cost for a savings estimate. State whether a monthly figure is a billing cap, an observed invoice or an assumed runtime projection. Keep taxes, credits, storage and egress separate when their treatment is unknown; do not add an invoice total to its component breakdown.
-
-## Proposed changes
-
-For “What would adding another instance cost?” resolve the exact resource and compare observed configuration with the user's specified alternative. If the target or proposed size/count is ambiguous, clarify it before calculating; do not infer a resize recommendation from a cost question.
-
-Read current official pricing through Documentation or a disclosed first-party web fallback. Record the source/date, currency, plan slug, rate units and billing rules. Compute current and proposed costs over the same stated duration, then proposed minus current for the incremental cost. Label arithmetic from known inputs Calculated; label assumed runtime, traffic or demand Estimated. Monthly plan caps and prorated projections are not actual invoices. Apply the product's actual billing rules rather than a universal hours-per-month multiplier.
-
-Include supported counts/autoscaling assumptions, storage, egress allowances/overages, minimum charges and dependencies without double-counting. State taxes, credits and unknown usage as exclusions where their treatment is unavailable. If alternative prices are unavailable, provide the comparison inputs and missing evidence without inventing a total. A cheaper plan does not establish adequate capacity or safe redundancy.
-
-Present the baseline, alternative, calculation, incremental amount, assumptions, exclusions and unanswered questions. Do not change the configuration, save account reports or maintain pricing/resource history.
 
 ## Evidence and safety
 

@@ -12,6 +12,6 @@ DigitalOcean MCP authorization, tool implementation and DigitalOcean account beh
 
 ## Supported versions
 
-The current release candidate is 1.0.0-rc.2. No stable V1 compatibility claim is made before live acceptance. Security fixes target the current development branch and latest maintained release.
+The current release candidate is 1.0.0-rc.3. No stable compatibility claim is made before live acceptance. Security fixes target the current development branch and latest maintained release.
 
 The project has no backend or credential custody. Skills are guidance, not an enforced authorization layer; see the [security model](docs/security.md).
