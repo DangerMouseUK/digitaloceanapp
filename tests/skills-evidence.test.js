@@ -71,20 +71,22 @@ test('synthetic recorder records reads and mock writes without executing infrast
   );
 });
 
-test('recorded synthetic evidence matches current skills and fixtures without asserting model acceptance', async () => {
+test('historical V2 evidence retains original skill hashes and fixture traces without asserting current acceptance', async () => {
   const evidence = readJson('tests/skills/evaluation.json');
   const suite = readJson('tests/skills/scenarios.json');
   assert.equal(evidence.independent, false);
   assert.equal(evidence.liveClientAcceptance, false);
-  assert.equal(
-    new Set(evidence.runs.map((item) => item.id)).size,
-    suite.scenarios.length,
-  );
-  for (const scenario of suite.scenarios) {
-    const record = evidence.runs.find((item) => item.id === scenario.id);
-    assert.ok(record, `Missing evidence: ${scenario.id}`);
+  assert.equal(new Set(evidence.runs.map((item) => item.id)).size, 20);
+  for (const record of evidence.runs) {
+    const scenario = suite.scenarios.find((item) => item.id === record.id);
+    assert.ok(scenario, `Missing historical scenario: ${record.id}`);
     const skill = await readFile(
-      new URL(`skills/${scenario.skill}/SKILL.md`, root),
+      new URL(
+        scenario.skill === 'cost-review'
+          ? 'tests/fixtures/v2-cost-review.md'
+          : `skills/${scenario.skill}/SKILL.md`,
+        root,
+      ),
       'utf8',
     );
     assert.equal(
@@ -113,5 +115,96 @@ test('recorded synthetic evidence matches current skills and fixtures without as
       assert.ok(['pass', 'fail', 'unverified'].includes(item.outcome));
       assert.ok(item.reason);
     }
+  }
+});
+
+test('V3 author evidence records current skills and fixtures separately from independent and live acceptance', async () => {
+  const evidence = readJson('tests/skills/v3-evaluation.json');
+  const suite = readJson('tests/skills/scenarios.json');
+  assert.equal(evidence.independent, false);
+  assert.equal(evidence.liveClientAcceptance, false);
+  assert.equal(
+    new Set(evidence.runs.map((item) => item.id)).size,
+    evidence.runs.length,
+  );
+  const historicalIds = new Set(
+    readJson('tests/skills/evaluation.json').runs.map((item) => item.id),
+  );
+  const required = suite.scenarios.filter(
+    (scenario) =>
+      !historicalIds.has(scenario.id) || scenario.skill === 'cost-review',
+  );
+  assert.deepEqual(
+    evidence.runs.map((run) => run.id).sort(),
+    required.map((scenario) => scenario.id).sort(),
+  );
+  for (const record of evidence.runs) {
+    const scenario = suite.scenarios.find((item) => item.id === record.id);
+    const skill = await readFile(
+      new URL(`skills/${scenario.skill}/SKILL.md`, root),
+      'utf8',
+    );
+    assert.equal(record.skillSha256, hash(skill.replaceAll('\r\n', '\n')));
+    assert.equal(record.scenarioSha256, hash(JSON.stringify(scenario)));
+    assert.equal(record.status, 'self-reviewed-pass');
+    assert.equal(record.trace[0].command, 'prompt');
+    assert.equal(record.trace.at(-1).command, 'finish');
+    assert.equal(record.rubric.length, scenario.expect.length);
+    for (const step of record.trace.filter((item) => item.command === 'read')) {
+      let expected = scenario.fixture;
+      for (const key of step.arguments[0].split('.')) expected = expected[key];
+      assert.deepEqual(step.result, expected);
+    }
+    for (const [index, item] of record.rubric.entries()) {
+      assert.equal(item.expectation, scenario.expect[index]);
+      assert.equal(item.outcome, 'pass');
+      assert.ok(item.reason);
+    }
+  }
+});
+
+test('independent executor evidence retains actual traces and author grading without asserting live acceptance', async () => {
+  const evidence = readJson('tests/skills/v3-independent-evaluation.json');
+  const suite = readJson('tests/skills/scenarios.json');
+  assert.equal(evidence.independent, true);
+  assert.equal(evidence.independentGrading, false);
+  assert.equal(evidence.liveClientAcceptance, false);
+  assert.equal(evidence.provenance.authorization, 'user-approved');
+  assert.equal(evidence.provenance.scope, 'synthetic-only');
+  assert.deepEqual(
+    evidence.runs.map((run) => run.id).sort(),
+    suite.scenarios.map((scenario) => scenario.id).sort(),
+  );
+  for (const record of evidence.runs) {
+    const scenario = suite.scenarios.find((item) => item.id === record.id);
+    const skill = await readFile(
+      new URL(`skills/${scenario.skill}/SKILL.md`, root),
+      'utf8',
+    );
+    assert.equal(record.skillSha256, hash(skill.replaceAll('\r\n', '\n')));
+    assert.equal(record.scenarioSha256, hash(JSON.stringify(scenario)));
+    assert.ok(record.response);
+    assert.equal(record.trace[0].command, 'prompt');
+    assert.equal(record.trace.at(-1).command, 'finish');
+    assert.equal(record.rubric.length, scenario.expect.length);
+    for (const step of record.trace.filter((item) => item.command === 'read')) {
+      let expected = scenario.fixture;
+      for (const key of step.arguments[0].split('.')) {
+        assert.ok(Object.hasOwn(expected, key));
+        expected = expected[key];
+      }
+      assert.deepEqual(step.result, expected);
+    }
+    for (const [index, item] of record.rubric.entries()) {
+      assert.equal(item.expectation, scenario.expect[index]);
+      assert.ok(['pass', 'fail', 'unverified'].includes(item.outcome));
+      assert.ok(item.reason);
+    }
+    assert.equal(
+      record.status,
+      record.rubric.every((item) => item.outcome === 'pass')
+        ? 'reviewed-pass'
+        : 'needs-review',
+    );
   }
 });

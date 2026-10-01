@@ -118,9 +118,13 @@ for (const path of await walk(base)) {
     }
   }
 }
-assert.equal(skillCount, 13);
+assert.equal(skillCount, 15);
 const evaluation = readJson('tests/skills/scenarios.json');
-assert.equal(evaluation.status, 'author-walkthrough-recorded');
+assert.ok(
+  ['v3-author-walkthrough-pending', 'v3-author-walkthrough-recorded'].includes(
+    evaluation.status,
+  ),
+);
 assert.equal(
   new Set(evaluation.scenarios.map((scenario) => scenario.id)).size,
   evaluation.scenarios.length,

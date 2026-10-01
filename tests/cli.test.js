@@ -30,7 +30,7 @@ const run = (args, extra = {}) =>
     ...extra,
   });
 
-test('each client generates a complete bundle with all thirteen skills and validates', async () => {
+test('each client generates a complete bundle with all fifteen skills and validates', async () => {
   for (const client of Object.keys(clients))
     for (const mode of clients[client].modes) {
       const target = join(temp, `${client}-${mode}`);
@@ -42,7 +42,7 @@ test('each client generates a complete bundle with all thirteen skills and valid
       assert.deepEqual(result.services, selectServices());
       assert.equal(
         (await readdir(join(target, clients[client].skills))).length,
-        13,
+        15,
       );
       assert.ok(
         (await readFile(join(target, 'INSTALL.md'), 'utf8')).includes('Remove'),
@@ -466,6 +466,14 @@ test(
       '.mcp.json',
       'data/services.json',
       'skills/cost-review/SKILL.md',
+      'skills/deployment-preflight/SKILL.md',
+      'skills/recovery-review/SKILL.md',
+      'src/preview.js',
+      'src/fingerprints.js',
+      'docs/v3-roadmap.md',
+      'tests/skills/v3-evaluation.json',
+      'tests/skills/v3-independent-evaluation.json',
+      'tests/fixtures/v2-cost-review.md',
       'LICENSE',
       'CHANGELOG.md',
     ])
@@ -532,6 +540,23 @@ test(
       'node_modules/digitaloceanapp/bin/digitaloceanapp.js',
     );
     const output = join(install, 'bundle');
+    const preview = spawnSync(
+      process.execPath,
+      [
+        installedCli,
+        'setup',
+        '--client',
+        'plugin',
+        '--output',
+        output,
+        '--dry-run',
+        '--json',
+      ],
+      { cwd: install, encoding: 'utf8' },
+    );
+    assert.equal(preview.status, 0, preview.stderr);
+    assert.equal(JSON.parse(preview.stdout).skills.length, 15);
+    await assert.rejects(readdir(output));
     const execution = spawnSync(
       process.execPath,
       [installedCli, 'setup', '--client', 'plugin', '--output', output],
