@@ -23,3 +23,11 @@ Reports use `schemaVersion: 1`, `command`, `ok`, `services`, `authentication: "u
 An invalid configuration stops prerequisite checks. The failure report omits raw input, parser details, paths and environment values; `services` is empty when validation did not complete. Run the same command without `--json` for its more specific redacted explanation. This output is a diagnostic summary, not proof of account access or a general scanner for every third-party server in your file.
 
 Consumers should use codes and booleans rather than matching prose. Additional codes may be added within schema version 1; incompatible report changes require a new schema version.
+
+## Setup and upgrade previews
+
+`setup --dry-run --json` and `upgrade --path DIRECTORY --dry-run --json` emit separate preview formats. `--json` is rejected for writing setup/upgrade commands and interactive setup; provide selection arguments explicitly. Previews run offline, do not write files, authenticate or validate output-directory writability.
+
+Both preview formats contain `schemaVersion: 1`, `command`, `ok`, `dryRun: true`, `authentication: "unverified"` and, on success, `selection` with client, mode, platform and service keys. Setup adds generated relative `files`, included `skills`, `installation` instructions and service-matched `tasks`. Upgrade adds `fromVersion`, `toVersion`, `changes` and `extraFileCount`; change statuses are `unchanged`, `added`, `review`, `release-change`, `customized` and `missing`.
+
+Failure previews contain `findings` with `INVALID_ARGUMENTS` or `BUNDLE_INVALID` and corrective guidance. Exit status is 0 on a successful preview and 1 on failure. Raw input, custom filenames/content, absolute input/output paths and environment values are omitted. Generated client destinations and literal credential references are public template guidance. These additions do not change the validate/doctor report contracts.

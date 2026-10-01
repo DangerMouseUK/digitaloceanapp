@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 1.0.0-rc.3 — 2026-10-01
+
+- Add offline setup dry runs with services, skills, installation and authentication previews; add redacted JSON to setup and upgrade dry runs without changing validate/doctor reports.
+- Record advisory generated-file fingerprints in new bundles; distinguish release changes, customizations and missing files during upgrades. Retain rc.1 and rc.2 support and manual review for older bundles without fingerprints.
+- Add deployment preflight and database/Droplet backup and recovery reviews; extend cost review to compare proposed changes using official prices and explicit assumptions.
+- Tailor installation task examples to connected services and separate server verification from skill discovery. Resource findings remain in the AI client, with no account-data persistence or project services.
+- Add 11 synthetic scenarios and record 12 current author walkthroughs including the cost-window rerun and V2 follow-ups. Preserve historical V2 evidence and record a user-authorized independent executor's 31 scenarios with separate author grading: 29 fully passing and two original fixture-limited cases. Authenticated compatibility remains pending.
+
 ## 1.0.0-rc.2 — 2026-09-27
 
 - Add task-oriented setup guidance and show selected services, mode and client installation steps before generation.

@@ -16,3 +16,5 @@ Source review date: 2026-09-27. The combinations below are experimental configur
 Use OAuth by default. Unsupported combinations fail before any output is created. Linux Claude Desktop, ChatGPT local, and token modes without a verified safe reference mechanism are explicitly rejected.
 
 All authenticated live client cells are **pending**, including OAuth, local startup and skill activation. See the [acceptance matrix](acceptance.md). Endpoint/source validation is not certification by a client vendor.
+
+V3 retains every target above. Before installing, use `setup --client CLIENT --dry-run` to inspect services, included skills, destinations and authentication steps. After manual installation, check both server connections and skill discovery in the client; neither proves the other. Verify each client/version/mode/OS separately. Portable-plugin acceptance applies only to the named host tested, not all plugin hosts.
