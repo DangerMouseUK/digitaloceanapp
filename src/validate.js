@@ -5,6 +5,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { resolve } from 'node:path';
 import { configuration, clients } from './clients.js';
 import { bundleFiles, containedFile } from './bundle.js';
+import { checkFileHashes } from './fingerprints.js';
 import {
   selectServices,
   manifest,
@@ -190,6 +191,7 @@ export async function validatePath(path, options = {}) {
         throw new Error(
           'Bundle version differs from this installed digitaloceanapp version. Regenerate the bundle.',
         );
+      checkFileHashes(meta.generatedFileHashes);
       const selected = {
         client: meta.client,
         mode: meta.mode,

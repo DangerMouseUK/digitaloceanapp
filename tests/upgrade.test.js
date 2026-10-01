@@ -7,6 +7,7 @@ import {
   mkdir,
   readdir,
   symlink,
+  rm,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -17,6 +18,7 @@ import { validatePath } from '../src/validate.js';
 import { clients } from '../src/clients.js';
 import { root, manifest } from '../src/catalog.js';
 import { planUpgrade, upgradeBundle, upgradeSummary } from '../src/upgrade.js';
+import { fileHash } from '../src/fingerprints.js';
 
 const cli = fileURLToPath(new URL('bin/digitaloceanapp.js', root));
 const run = (args) =>
@@ -52,7 +54,7 @@ test('upgrade reads a genuine V1 bundle and produces a valid replacement while p
     plan.changes.filter(
       (item) => item.status === 'added' && item.file.endsWith('SKILL.md'),
     ).length,
-    4,
+    6,
   );
   const output = join(base, 'new bundle');
   await upgradeBundle(plan, output);
@@ -64,6 +66,104 @@ test('upgrade reads a genuine V1 bundle and produces a valid replacement while p
   );
   for (const [file, content] of Object.entries(baseline))
     assert.equal(await readFile(join(source, file), 'utf8'), content);
+});
+
+test('fingerprints classify release changes, customizations and missing files without trusting labels', async () => {
+  const base = await mkdtemp(join(tmpdir(), 'digitaloceanapp fingerprints '));
+  const source = join(base, 'bundle');
+  const options = {
+    client: 'cursor',
+    mode: 'remote-oauth',
+    keys: ['apps'],
+    platform: 'win32',
+  };
+  await createBundle(options, source);
+  const metadataPath = join(source, 'bundle.json');
+  const meta = JSON.parse(await readFile(metadataPath, 'utf8'));
+  assert.equal(Object.hasOwn(meta.generatedFileHashes, 'bundle.json'), false);
+  assert.equal(Object.hasOwn(meta.generatedFileHashes, 'MIGRATE.md'), false);
+  const oldGuide = 'Previous generated installation instructions.\n';
+  meta.generatedFileHashes['INSTALL.md'] = fileHash(oldGuide);
+  // Untrusted hash labels must never drive reads, output paths or reported names.
+  const secret = 'private-fingerprint-label';
+  meta.generatedFileHashes[`../${secret}`] = fileHash('not a file');
+  await writeFile(metadataPath, JSON.stringify(meta));
+  await writeFile(
+    join(source, 'INSTALL.md'),
+    oldGuide.replaceAll('\n', '\r\n'),
+  );
+  const skillPath = '.cursor/skills/cost-review/SKILL.md';
+  await writeFile(join(source, skillPath), 'User customization.');
+  await rm(join(source, 'LICENSE'));
+  const plan = await planUpgrade(source);
+  const statuses = Object.fromEntries(
+    plan.changes.map(({ file, status }) => [file, status]),
+  );
+  assert.equal(statuses['INSTALL.md'], 'release-change');
+  assert.equal(statuses[skillPath], 'customized');
+  assert.equal(statuses.LICENSE, 'missing');
+  assert.equal(statuses['.cursor/mcp.json'], 'unchanged');
+  assert.equal(upgradeSummary(plan).includes(secret), false);
+  const output = join(base, 'replacement');
+  await upgradeBundle(plan, output);
+  assert.deepEqual((await validatePath(output)).options, options);
+  assert.equal(
+    await readFile(join(source, skillPath), 'utf8'),
+    'User customization.',
+  );
+});
+
+test('rc.2 metadata without fingerprints keeps legacy review and rejects malformed fingerprints safely', async () => {
+  const { source } = await fixture();
+  const metadataPath = join(source, 'bundle.json');
+  const meta = JSON.parse(await readFile(metadataPath, 'utf8'));
+  meta.version = '1.0.0-rc.2';
+  await writeFile(metadataPath, JSON.stringify(meta));
+  const plan = await planUpgrade(source);
+  assert.equal(plan.fromVersion, '1.0.0-rc.2');
+  assert.equal(
+    plan.changes.find((item) => item.file === 'INSTALL.md').status,
+    'review',
+  );
+  for (const generatedFileHashes of [
+    null,
+    [],
+    'private-hash-sentinel',
+    { 'INSTALL.md': 'private-hash-sentinel' },
+  ]) {
+    await writeFile(
+      metadataPath,
+      JSON.stringify({ ...meta, generatedFileHashes }),
+    );
+    const result = run(['upgrade', '--path', source, '--dry-run', '--json']);
+    assert.equal(result.status, 1);
+    assert.equal(JSON.parse(result.stdout).findings[0].code, 'BUNDLE_INVALID');
+    assert.equal(result.stdout.includes('private-hash-sentinel'), false);
+  }
+});
+
+test('bundle validation does not trust forged fingerprints in place of actual generated contents', async () => {
+  const base = await mkdtemp(
+    join(tmpdir(), 'digitaloceanapp forged baseline '),
+  );
+  const source = join(base, 'bundle');
+  await createBundle(
+    {
+      client: 'cursor',
+      mode: 'remote-oauth',
+      keys: ['docs'],
+      platform: 'win32',
+    },
+    source,
+  );
+  const skillPath = '.cursor/skills/cost-review/SKILL.md';
+  const content = 'Changed skill content';
+  await writeFile(join(source, skillPath), content);
+  const metadataPath = join(source, 'bundle.json');
+  const meta = JSON.parse(await readFile(metadataPath, 'utf8'));
+  meta.generatedFileHashes[skillPath] = fileHash(content);
+  await writeFile(metadataPath, JSON.stringify(meta));
+  await assert.rejects(validatePath(source), /supporting files/);
 });
 
 test('upgrade retains explicit selections for every client/mode without expanding to a preset', async () => {

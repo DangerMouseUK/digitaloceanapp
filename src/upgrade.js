@@ -10,9 +10,10 @@ import {
 import { bundleFiles, containedFile, createBundle } from './bundle.js';
 import { clients, configuration, installationDetails } from './clients.js';
 import { manifest, modes, platforms, services } from './catalog.js';
+import { checkFileHashes, fileHash } from './fingerprints.js';
 
 // Only bundle versions whose metadata contract has been reviewed are accepted.
-const sourceVersions = new Set(['1.0.0-rc.1', manifest.version]);
+const sourceVersions = new Set(['1.0.0-rc.1', '1.0.0-rc.2', manifest.version]);
 const normalize = (text) => text.replaceAll('\r\n', '\n');
 
 async function sourceFiles(directory, prefix = '') {
@@ -74,6 +75,7 @@ export async function planUpgrade(path) {
       keys: meta.keys,
     };
     const config = configuration(options); // Reject unsupported combinations before writing.
+    checkFileHashes(meta.generatedFileHashes);
     if (meta.configFile !== config.file)
       throw new Error(
         'Bundle config path does not match its client. Review the metadata locally.',
@@ -93,13 +95,27 @@ export async function planUpgrade(path) {
     const expected = await bundleFiles(options);
     const changes = [];
     for (const [file, content] of expected) {
-      const status = !previous.has(file)
-        ? 'added'
-        : normalize(
-              await readFile(await containedFile(directory, file), 'utf8'),
-            ) === normalize(content)
-          ? 'unchanged'
-          : 'review';
+      const baseline =
+        !['bundle.json', 'MIGRATE.md'].includes(file) &&
+        Object.hasOwn(meta.generatedFileHashes ?? {}, file)
+          ? meta.generatedFileHashes[file]
+          : undefined;
+      let status;
+      if (!previous.has(file)) status = baseline ? 'missing' : 'added';
+      else {
+        const actual = await readFile(
+          await containedFile(directory, file),
+          'utf8',
+        );
+        status =
+          normalize(actual) === normalize(content)
+            ? 'unchanged'
+            : baseline
+              ? fileHash(actual) === baseline
+                ? 'release-change'
+                : 'customized'
+              : 'review';
+      }
       changes.push({ file, status }); // Only trusted generated paths are reported.
     }
     return {
@@ -133,10 +149,10 @@ export function upgradeSummary(plan) {
       .filter(({ status }) => status !== 'unchanged')
       .map(
         ({ file, status }) =>
-          `${status === 'added' ? 'ADD' : 'REVIEW'}: ${file}`,
+          `${{ added: 'ADD', review: 'REVIEW', 'release-change': 'RELEASE CHANGE', customized: 'CUSTOMIZED', missing: 'MISSING' }[status]}: ${file}`,
       ),
     `Additional source files requiring manual review: ${plan.extraFileCount}. Names and contents are suppressed.`,
-    'REVIEW means release changes or local customizations; without a historical baseline these cannot be distinguished. Existing settings and customizations are not copied. Keep the original bundle and review differences locally before installing.',
+    'REVIEW means release changes or local customizations without a baseline. RELEASE CHANGE matches the recorded generated baseline; CUSTOMIZED differs from it; MISSING was recorded but is absent. Fingerprints are advisory, not proof of integrity. Existing settings and customizations are not copied. Keep the original bundle and review differences locally before installing.',
   ].join('\n');
 }
 

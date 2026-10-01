@@ -21,6 +21,7 @@ import {
   installationDetails,
   json,
 } from './clients.js';
+import { generatedFileHashes } from './fingerprints.js';
 
 export async function skillFiles() {
   const base = fileURLToPath(new URL('skills/', root));
@@ -35,17 +36,61 @@ export async function skillFiles() {
   return files.sort(([a], [b]) => a.localeCompare(b));
 }
 
-export function installationGuide(options) {
-  const { client, mode, keys, platform } = options;
-  const { destination, removal } = installationDetails(options);
-  const protectedServices = requiresAuthentication(keys, mode);
-  const authentication = !protectedServices
+export function installationAuthentication({ client, mode, keys }) {
+  return !requiresAuthentication(keys, mode)
     ? 'The selected public documentation tools require no DigitalOcean token. Do not configure a token solely for documentation.'
     : mode === 'remote-oauth'
       ? 'Connect through the client and complete DigitalOcean OAuth for each protected endpoint. Documentation needs no DigitalOcean token.'
       : client === 'vscode'
         ? 'Enter the token only in VS Code’s password input when it starts the connection.'
         : 'Set DIGITALOCEAN_API_TOKEN outside this bundle in the environment of the process launching your client. Restart the client after changing its environment. Never paste a token into these files or a chat.';
+}
+
+export function taskExamples(keys) {
+  const examples = [];
+  if (keys.includes('accounts'))
+    examples.push({
+      skill: 'infrastructure-inventory',
+      services: ['accounts'],
+      prompt:
+        'Show my DigitalOcean resources and state which services you could inspect.',
+    });
+  if (keys.includes('apps'))
+    examples.push({
+      skill: 'deployment-preflight',
+      services: ['apps'],
+      prompt:
+        'Check this App Platform app before release without deploying or changing it.',
+    });
+  if (keys.includes('databases') || keys.includes('droplets'))
+    examples.push({
+      skill: 'recovery-review',
+      services: keys.filter((key) => ['databases', 'droplets'].includes(key)),
+      prompt:
+        'Review backups and recovery gaps for these resources without creating backups or restoring anything.',
+    });
+  if (keys.includes('apps') && keys.includes('docs'))
+    examples.push({
+      skill: 'cost-review',
+      services: ['apps', 'docs'],
+      prompt:
+        'What would adding one instance to this app cost? Show current prices, assumptions and exclusions; make no changes.',
+    });
+  if (keys.includes('docs'))
+    examples.push({
+      skill: 'documentation-research',
+      services: ['docs'],
+      prompt:
+        'Find official DigitalOcean documentation for App Platform health checks.',
+    });
+  return examples;
+}
+
+export function installationGuide(options) {
+  const { client, mode, keys, platform } = options;
+  const { destination, removal } = installationDetails(options);
+  const protectedServices = requiresAuthentication(keys, mode);
+  const authentication = installationAuthentication(options);
   const question = keys.includes('accounts')
     ? 'Show me my DigitalOcean account.'
     : keys.includes('apps')
@@ -86,6 +131,22 @@ On Windows, the same command accepts a quoted path such as \`"C:/Projects/digita
 
 These checks run offline. Use your client’s MCP status view, confirm the selected services and skills, then ask “${question}” A useful result should state scope and missing coverage. ${protectedServices ? 'Authentication and real account access require a separate successful client connection.' : 'Public documentation verification does not establish account access.'} Review client tool approvals before use.
 
+Confirm MCP connections and skill discovery separately: inspect the selected server list, then use the client's skill controls to find an installed skill by name. If automatic selection is unavailable, load that skill explicitly using the client's supported controls. A server connection alone does not prove a skill is active.
+
+## Try a task
+
+${
+  taskExamples(keys)
+    .map(
+      ({ skill, services, prompt }) =>
+        `- **${skill}** (requires ${services.join(', ')}): “${prompt}”`,
+    )
+    .join('\n') ||
+  'Ask the assistant to discover available read tools for the selected services and explain missing coverage.'
+}
+
+All supplied skills are included. Tasks above match selected services; other workflows may need additional connections. Optional dependency services and unavailable evidence must be disclosed by the assistant.
+
 ## Remove
 
 ${removal} ${protectedServices ? 'Revoke DigitalOcean authorization separately if desired. ' : ''}Deleting this generated directory does not remove configuration you copied elsewhere.
@@ -119,6 +180,7 @@ export async function bundleFiles(options) {
       version: manifest.version,
       ...options,
       configFile: config.file,
+      generatedFileHashes: generatedFileHashes(files),
     }),
   );
   return files;
