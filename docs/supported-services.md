@@ -1,10 +1,10 @@
 # Supported services
 
-Generated from data/services.json. Verified 2026-09-27. Do not edit manually.
+Generated from data/services.json. Verified 2026-11-12. Do not edit manually.
 
-[Remote source](https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md) · [Local identifiers](https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/pkg/registry/registry.go)
+[Remote source](https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md) · [Local identifiers](https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/pkg/registry/registry.go)
 
-Local package: `@digitalocean/mcp@1.1.1`. All endpoints and tools remain upstream-managed. Local MCP also registers shared region tools; service selection is not an authorization boundary.
+Local package: `@digitalocean/mcp@1.6.5`. All endpoints and tools remain upstream-managed. Local MCP also registers shared region tools; service selection is not an authorization boundary.
 
 | Key | Service | Remote endpoint | Authentication | Local |
 | --- | --- | --- | --- | --- |
@@ -29,12 +29,15 @@ Local package: `@digitalocean/mcp@1.1.1`. All endpoints and tools remain upstrea
 | genai-custom-models | GenAI Custom Models | https://genai-custom-models.mcp.digitalocean.com/mcp | oauth-or-token | genai-custom-models |
 | genai-batchinference | GenAI Batch Inference | https://genai-batchinference.mcp.digitalocean.com/mcp | oauth-or-token | genai-batchinference |
 | genai-inferencerouter | GenAI Inference Router | https://genai-inferencerouter.mcp.digitalocean.com/mcp | oauth-or-token | genai-inferencerouter |
+| microvms | MicroVMs | https://microvms.mcp.digitalocean.com/mcp | oauth-or-token | microvms |
+| signals | Signals | https://signals.mcp.digitalocean.com/mcp | oauth-or-token | signals |
+| harness-runtime | Harness Runtime | https://harness-runtime.mcp.digitalocean.com/mcp | oauth-or-token | harness-runtime |
 
 ## Presets
 
 - **core**: accounts, apps, insights, docs.
 - **app-platform**: accounts, apps, insights, docr, spaces, networking, docs.
 - **infrastructure**: accounts, droplets, databases, doks, networking, volumes, nfs, insights, docs.
-- **full**: accounts, apps, insights, docs, docr, spaces, networking, droplets, databases, doks, volumes, nfs, functions, marketplace, vector-databases, dedicated-inference, inference-modelcatalog, genai-evaluation, genai-custom-models, genai-batchinference, genai-inferencerouter.
+- **full**: accounts, apps, insights, docs, docr, spaces, networking, droplets, databases, doks, volumes, nfs, functions, marketplace, vector-databases, dedicated-inference, inference-modelcatalog, genai-evaluation, genai-custom-models, genai-batchinference, genai-inferencerouter, microvms, signals, harness-runtime.
 
 Core is the default. Full is advanced and may reduce tool-selection accuracy. Custom selections enable only the requested services. Availability of an endpoint does not establish support for every resource or metric within its product.

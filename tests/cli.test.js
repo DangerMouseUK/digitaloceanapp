@@ -155,7 +155,7 @@ test('CLI setup, validate, services and doctor work from an unrelated directory'
   );
   assert.equal(missing.findings.filter((f) => !f.ok).length, 2);
   const catalog = run(['services', '--json']);
-  assert.equal(JSON.parse(catalog.stdout).services.length, 21);
+  assert.equal(JSON.parse(catalog.stdout).services.length, 24);
   const userHomeConfig = join(temp, 'personal-settings.json');
   await writeFile(userHomeConfig, 'untouched');
   assert.equal(await readFile(userHomeConfig, 'utf8'), 'untouched');

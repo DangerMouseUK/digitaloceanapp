@@ -19,7 +19,7 @@ Implementation target: 1.0.0-rc.3 (V3). Client/registry source review: 2026-09-2
 
 On 2026-11-12, `claude plugin validate --strict` (Claude Code 2.1.321, Windows) passed for the repository root and for generated remote-OAuth and Windows local portable plugin bundles. Its plugin-directory advisories (no icon; generated bundles have no README) concern Anthropic directory submission only. This is an offline manifest check: no marketplace was added, no plugin was installed, and no MCP server was connected.
 
-Automated results are recorded by the implementation PR and GitHub Actions for its exact commit. This table describes suite coverage, not an assertion that unrun CI jobs passed. Endpoint registry and package identifiers were checked against DigitalOcean v1.1.1; plugin schemas target Agent Plugins 1.0.0.
+Automated results are recorded by the implementation PR and GitHub Actions for its exact commit. This table describes suite coverage, not an assertion that unrun CI jobs passed. Endpoint registry and package identifiers were checked against DigitalOcean v1.1.1 on 2026-09-27 and against v1.6.5 on 2026-11-12, which added MicroVMs, Signals and Harness Runtime to the reviewed registry. The 1.6.5 local package has not been started in a live client; plugin schemas target Agent Plugins 1.0.0.
 
 ## Python skill validation
 

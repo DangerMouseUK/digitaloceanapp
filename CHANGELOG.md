@@ -9,6 +9,8 @@
 - Correct client guides that offered unsupported platforms, token modes or VS Code input removal to other clients.
 - Check skill names and descriptions against Agent Skills limits shared by Claude and OpenAI loaders.
 - Accept npm 12's keyed `npm pack --json` output in the packaging test.
+- Add MicroVMs, Signals and Harness Runtime to the reviewed registry and pin the local package to `@digitalocean/mcp@1.6.5`, verified against upstream v1.6.5 on 2026-11-12. The new services are available through `full` or explicit `--services` selection only; no default or named preset changes. MicroVMs and Harness Runtime include command execution in sandboxes, so select them deliberately. Bundles keep their recorded service list on upgrade.
+- Update smol-toml to 1.9.1 and prettier to 3.9.10, and resolve the fast-uri host-confusion advisory (3.1.9). Update GitHub Actions: setup-node 7.1.0, download-artifact 8.0.2 (hash mismatches now fail the release job), upload-artifact 7.0.2 and CodeQL 4.38.3.
 
 ## 1.0.0-rc.3 — 2026-10-01
 

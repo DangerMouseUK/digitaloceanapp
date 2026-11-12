@@ -83,6 +83,18 @@
     "digitalocean-genai-inferencerouter": {
       "url": "https://genai-inferencerouter.mcp.digitalocean.com/mcp",
       "type": "streamable-http"
+    },
+    "digitalocean-microvms": {
+      "url": "https://microvms.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-signals": {
+      "url": "https://signals.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
+    },
+    "digitalocean-harness-runtime": {
+      "url": "https://harness-runtime.mcp.digitalocean.com/mcp",
+      "type": "streamable-http"
     }
   },
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
