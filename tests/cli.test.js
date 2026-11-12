@@ -53,6 +53,42 @@ test('each client generates a complete bundle with all fifteen skills and valida
     }
 });
 
+test('portable plugin bundles are also Claude Code plugins and marketplaces', async () => {
+  const target = join(temp, 'claude plugin bundle');
+  await createBundle(
+    {
+      client: 'plugin',
+      mode: 'remote-oauth',
+      keys: ['docs'],
+      platform: 'linux',
+    },
+    target,
+  );
+  const read = async (path) =>
+    JSON.parse(await readFile(join(target, path), 'utf8'));
+  const plugin = await read('.claude-plugin/plugin.json');
+  assert.equal(plugin.name, manifest.name);
+  assert.equal(plugin.version, manifest.version);
+  const marketplace = await read('.claude-plugin/marketplace.json');
+  assert.deepEqual(marketplace.plugins, [
+    { name: manifest.name, source: './', description: manifest.description },
+  ]);
+  // Claude Code loads skills/ and .mcp.json from their default plugin locations.
+  assert.deepEqual(await read('.mcp.json'), {
+    mcpServers: {
+      'digitalocean-docs': {
+        url: 'https://docs.mcp.digitalocean.com/mcp',
+        type: 'http',
+      },
+    },
+  });
+  assert.equal((await readdir(join(target, 'skills'))).length, 15);
+  const install = await readFile(join(target, 'INSTALL.md'), 'utf8');
+  assert.ok(install.includes('claude plugin install digitaloceanapp@'));
+  // Claude.ai and Cowork do not install plugins that contain a top-level bin/.
+  await assert.rejects(readdir(join(target, 'bin')));
+});
+
 test('setup never overwrites output and fails before writing invalid selections', async () => {
   const existing = join(temp, 'existing');
   await mkdir(existing);
@@ -458,11 +494,17 @@ test(
       { cwd: fileURLToPath(root), encoding: 'utf8', timeout: 30000 },
     );
     assert.equal(pack.status, 0, pack.stderr);
-    const details = JSON.parse(pack.stdout)[0];
+    // npm 11 reports an array of packages; npm 12 keys packages by name.
+    const packed = JSON.parse(pack.stdout);
+    const details = Array.isArray(packed)
+      ? packed[0]
+      : Object.values(packed)[0];
     for (const required of [
       'plugin.json',
       'mcp.json',
       '.codex-plugin/plugin.json',
+      '.claude-plugin/plugin.json',
+      '.claude-plugin/marketplace.json',
       '.mcp.json',
       'data/services.json',
       'skills/cost-review/SKILL.md',

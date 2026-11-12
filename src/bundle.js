@@ -18,7 +18,10 @@ import {
   clients,
   configuration,
   compatibilityManifest,
+  claudePluginManifest,
+  claudeMarketplace,
   installationDetails,
+  apiClients,
   json,
 } from './clients.js';
 import { generatedFileHashes } from './fingerprints.js';
@@ -41,9 +44,11 @@ export function installationAuthentication({ client, mode, keys }) {
     ? 'The selected public documentation tools require no DigitalOcean token. Do not configure a token solely for documentation.'
     : mode === 'remote-oauth'
       ? 'Connect through the client and complete DigitalOcean OAuth for each protected endpoint. Documentation needs no DigitalOcean token.'
-      : client === 'vscode'
-        ? 'Enter the token only in VS Code’s password input when it starts the connection.'
-        : 'Set DIGITALOCEAN_API_TOKEN outside this bundle in the environment of the process launching your client. Restart the client after changing its environment. Never paste a token into these files or a chat.';
+      : apiClients.includes(client)
+        ? 'Create a DigitalOcean API token with the narrowest scopes that cover your task. Keep it in your server environment or secret manager as DIGITALOCEAN_API_TOKEN and substitute it for the ${DIGITALOCEAN_API_TOKEN} placeholder in code at request time. Never commit it, place it in prompts or send it to the model.'
+        : client === 'vscode'
+          ? 'Enter the token only in VS Code’s password input when it starts the connection.'
+          : 'Set DIGITALOCEAN_API_TOKEN outside this bundle in the environment of the process launching your client. Restart the client after changing its environment. Never paste a token into these files or a chat.';
 }
 
 export function taskExamples(keys) {
@@ -109,8 +114,8 @@ ${keys.length > 9 ? fullWarning + '\n\n' : ''}## Install
 1. Back up existing client settings before merging. Preserve unrelated server entries and skill folders; do not replace a whole configuration with this fragment.
 2. ${destination}
 3. ${authentication}
-4. ${mode === 'local' ? 'Ensure Node.js and npx are installed and available to the client. The client will download and run the pinned official @digitalocean/mcp package from npm. This generator does not install or launch it. Desktop GUI environment inheritance must be checked on your OS; do not assume shell-profile variables reach a GUI app.' : 'The client connects directly to the selected DigitalOcean HTTPS endpoints. No digitaloceanapp server is involved.'}
-5. ${['plugin', 'chatgpt'].includes(client) ? 'If plugin import is unavailable, manually connect the listed endpoints and load the supplied skills using the host’s supported controls. Availability depends on host version, account and workspace policy.' : `Install or import the supplied skills from ${clients[client].skills}/; an MCP configuration alone does not activate workflows.`}
+4. ${connection(client, mode)}
+5. ${skillStep(client)}
 
 ## Verify
 
@@ -153,8 +158,30 @@ ${removal} ${protectedServices ? 'Revoke DigitalOcean authorization separately i
 
 ## Trust and limitations
 
-The maintainer receives no credentials or account data through normal use. Your client and DigitalOcean have their own data policies. Skills guide behavior; they cannot enforce read-only access or intercept tools. Use appropriate DigitalOcean permissions and client approvals. No configuration here automatically approves tools. Client/account compatibility is pending live acceptance.
+The maintainer receives no credentials or account data through normal use. Your client and DigitalOcean have their own data policies. Skills guide behavior; they cannot enforce read-only access or intercept tools. Use appropriate DigitalOcean permissions and client approvals. No configuration here automatically approves tools.${client === 'anthropic-api' ? ' The Claude API runs MCP tool calls without a per-call approval step, so restrict the token scopes and use mcp_toolset configs to disable tools you do not need.' : ''} Client/account compatibility is pending live acceptance.
 `;
+}
+
+function connection(client, mode) {
+  if (mode === 'local')
+    return 'Ensure Node.js and npx are installed and available to the client. The client will download and run the pinned official @digitalocean/mcp package from npm. This generator does not install or launch it. Desktop GUI environment inheritance must be checked on your OS; do not assume shell-profile variables reach a GUI app.';
+  if (client === 'anthropic-api')
+    return 'Anthropic’s API connects to the selected DigitalOcean HTTPS endpoints for each request; your code sends the token with the request. Local stdio servers cannot be used. No digitaloceanapp server is involved.';
+  if (client === 'openai-api')
+    return 'OpenAI’s API connects to the selected DigitalOcean HTTPS endpoints for each request; your code sends the token with the request. No digitaloceanapp server is involved.';
+  if (['claude', 'chatgpt'].includes(client))
+    return 'The service connects to the selected DigitalOcean HTTPS endpoints from its own cloud on behalf of your account. No digitaloceanapp server is involved.';
+  return 'The client connects directly to the selected DigitalOcean HTTPS endpoints. No digitaloceanapp server is involved.';
+}
+
+function skillStep(client) {
+  if (['plugin', 'chatgpt'].includes(client))
+    return 'If plugin import is unavailable, manually connect the listed endpoints and load the supplied skills using the host’s supported controls. Availability depends on host version, account and workspace policy.';
+  if (client === 'claude')
+    return 'Compress each folder under skills/ into its own ZIP file (the ZIP contains the folder, which contains SKILL.md) and upload it under Customize > Skills. Skills require code execution to be enabled; on Team and Enterprise plans an owner can restrict uploads.';
+  if (apiClients.includes(client))
+    return 'APIs do not load skill folders from this bundle. Include the relevant SKILL.md text in your system or developer instructions, or upload it with your provider’s own skills feature where available. An MCP connection alone does not apply a workflow.';
+  return `Install or import the supplied skills from ${clients[client].skills}/; an MCP configuration alone does not activate workflows.`;
 }
 
 export async function bundleFiles(options) {
@@ -170,6 +197,10 @@ export async function bundleFiles(options) {
     for (const server of Object.values(compatibility.mcpServers))
       if (server.type === 'streamable-http') server.type = 'http';
     files.set('.mcp.json', json(compatibility));
+    if (options.client === 'plugin') {
+      files.set('.claude-plugin/plugin.json', json(claudePluginManifest()));
+      files.set('.claude-plugin/marketplace.json', json(claudeMarketplace()));
+    }
   }
   files.set('INSTALL.md', installationGuide(options));
   files.set('LICENSE', await readFile(new URL('LICENSE', root), 'utf8'));

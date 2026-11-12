@@ -10,11 +10,11 @@ Configuration modes: remote-oauth, local; Windows/macOS only.
 node bin/digitaloceanapp.js setup --client claude-desktop --mode remote-oauth --preset core --output ./claude-desktop-bundle
 ```
 
-Run from the repository. Use `--platform win32`, `--platform darwin` or `--platform linux` for a different supported target. The generator rejects unsupported combinations rather than silently changing modes. Generated examples under `examples/` cover supported modes and operating systems for Core; the CLI supports all presets/custom selections.
+Run from the repository. Use `--platform win32` or `--platform darwin` for a different supported target; Linux is not supported. The generator rejects unsupported combinations rather than silently changing modes. Generated examples under `examples/` cover supported modes and operating systems for Core; the CLI supports all presets/custom selections.
 
 ## Install and verify
 
-Remote: add each connectors.json URL through Customize > Connectors > Add custom connector and authenticate. That file is an instruction inventory, not a native config file. Local: merge mcpServers into the developer configuration at %APPDATA%/Claude/claude_desktop_config.json (Windows) or ~/Library/Application Support/Claude/claude_desktop_config.json (macOS). Launch with the token in the client process environment and verify inheritance. Import the supplied skills manually using available skill controls.
+Remote: add each connectors.json URL through Customize > Connectors > Add custom connector and authenticate. That file is an instruction inventory, not a native config file. Remote connectors are configured through your Claude account rather than this computer; the [Claude apps guide](../claude/README.md) covers that setup, including Team/Enterprise and skill ZIP uploads. Local: merge mcpServers into the developer configuration at %APPDATA%/Claude/claude_desktop_config.json (Windows) or ~/Library/Application Support/Claude/claude_desktop_config.json (macOS). Launch with the token in the client process environment and verify inheritance. Import the supplied skills manually using available skill controls.
 
 Skill location in the generated bundle: `skills/ (manual import)`. Back up and merge rather than replacing an existing client file. Preserve other server entries and skills.
 
@@ -22,6 +22,6 @@ Run validation against the bundle, inspect the client’s MCP connection and ski
 
 ## Remove and troubleshoot
 
-Remove only the server entries/connector registrations and skill folders installed from this bundle. Remove any now-unused VS Code secret input. Revoke DigitalOcean grants separately if required. For plugin installation, uninstall through the host’s plugin controls.
+Remove only the server entries/connector registrations and skill folders installed from this bundle. Revoke DigitalOcean grants separately if required.
 
-For token modes, use the [authentication guide](../../docs/authentication.md); never copy token values into JSON/TOML or chat. GUI environment inheritance can differ from a shell. See [troubleshooting](../../docs/troubleshooting.md). No live compatibility claim follows from an example parsing successfully.
+For local mode, use the [authentication guide](../../docs/authentication.md); never copy token values into JSON or chat. GUI environment inheritance can differ from a shell. See [troubleshooting](../../docs/troubleshooting.md). No live compatibility claim follows from an example parsing successfully.

@@ -6,5 +6,6 @@ configs/
 clients/*/examples/
 .mcp.json
 .codex-plugin/plugin.json
+.claude-plugin/
 mcp.json
 docs/supported-services.md

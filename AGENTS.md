@@ -45,7 +45,7 @@ The [PRD](docs/prd.md) explains the product intent. Preserve it as the original 
 
 Run `npm run generate` after changing registry, presets, client rendering, or plugin metadata. Commit the generated files with their source changes. Do not hand-edit:
 
-- `mcp.json`, `.mcp.json`, or `.codex-plugin/plugin.json`
+- `mcp.json`, `.mcp.json`, `.codex-plugin/plugin.json`, or `.claude-plugin/*.json`
 - `configs/` or `clients/*/examples/`
 - `docs/supported-services.md`
 

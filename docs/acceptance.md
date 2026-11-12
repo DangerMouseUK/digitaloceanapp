@@ -2,16 +2,22 @@
 
 Implementation target: 1.0.0-rc.3 (V3). Client/registry source review: 2026-09-27; V3 workflow reference review: 2026-10-01. This file separates source review, automated checks, author-guided synthetic walkthroughs, and user-assisted live acceptance. No DigitalOcean account was connected for implementation. All client/mode combinations below remain experimental configuration templates; none is advertised as authenticated or behaviorally certified.
 
-| Target          | Source reviewed | Automated configuration coverage                    | Authenticated / skills live |
-| --------------- | --------------- | --------------------------------------------------- | --------------------------- |
-| Portable plugin | 2026-09-27      | All supported modes/presets/platforms in test suite | Pending                     |
-| ChatGPT         | 2026-09-27      | Remote OAuth bundles only                           | Pending                     |
-| Codex           | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
-| VS Code         | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
-| Cursor          | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
-| Claude Code     | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
-| Claude Desktop  | 2026-09-27      | OAuth instructions/local; Windows and macOS         | Pending                     |
-| Windsurf        | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
+| Target                  | Source reviewed | Automated configuration coverage                    | Authenticated / skills live |
+| ----------------------- | --------------- | --------------------------------------------------- | --------------------------- |
+| Portable plugin         | 2026-09-27      | All supported modes/presets/platforms in test suite | Pending                     |
+| Claude Code plugin      | 2026-11-12      | Manifest/marketplace drift; offline `claude` check  | Pending                     |
+| ChatGPT                 | 2026-09-27      | Remote OAuth bundles only                           | Pending                     |
+| Codex                   | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
+| OpenAI Responses API    | 2026-11-12      | Token fragments; all presets                        | Pending                     |
+| VS Code                 | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
+| Cursor                  | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
+| Claude Code             | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
+| Claude apps             | 2026-11-12      | OAuth connector inventory; all presets              | Pending                     |
+| Claude Desktop          | 2026-09-27      | OAuth instructions/local; Windows and macOS         | Pending                     |
+| Claude API (MCP client) | 2026-11-12      | Token fragments; all presets                        | Pending                     |
+| Windsurf                | 2026-09-27      | OAuth, token, local; all presets/platforms          | Pending                     |
+
+On 2026-11-12, `claude plugin validate --strict` (Claude Code 2.1.321, Windows) passed for the repository root and for generated remote-OAuth and Windows local portable plugin bundles. Its plugin-directory advisories (no icon; generated bundles have no README) concern Anthropic directory submission only. This is an offline manifest check: no marketplace was added, no plugin was installed, and no MCP server was connected.
 
 Automated results are recorded by the implementation PR and GitHub Actions for its exact commit. This table describes suite coverage, not an assertion that unrun CI jobs passed. Endpoint registry and package identifiers were checked against DigitalOcean v1.1.1; plugin schemas target Agent Plugins 1.0.0.
 

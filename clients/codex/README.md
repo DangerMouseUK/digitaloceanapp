@@ -22,6 +22,6 @@ Run validation against the bundle, inspect the client’s MCP connection and ski
 
 ## Remove and troubleshoot
 
-Remove only the server entries/connector registrations and skill folders installed from this bundle. Remove any now-unused VS Code secret input. Revoke DigitalOcean grants separately if required. For plugin installation, uninstall through the host’s plugin controls.
+Remove only the server entries/connector registrations and skill folders installed from this bundle. Revoke DigitalOcean grants separately if required.
 
 For token modes, use the [authentication guide](../../docs/authentication.md); never copy token values into JSON/TOML or chat. GUI environment inheritance can differ from a shell. See [troubleshooting](../../docs/troubleshooting.md). No live compatibility claim follows from an example parsing successfully.

@@ -12,8 +12,11 @@ For local MCP or supported remote-token adapters, choose appropriately scoped Di
 | Cursor / Windsurf                     | `${env:DIGITALOCEAN_API_TOKEN}`                                    |
 | Claude Code                           | `${DIGITALOCEAN_API_TOKEN}`                                        |
 | Portable local / Claude Desktop local | Inherited launching-process environment; no invented interpolation |
+| Claude API / OpenAI Responses API     | `${DIGITALOCEAN_API_TOKEN}` placeholder replaced by your own code  |
 
-Remote-token bundles are not offered for ChatGPT, portable plugins or Claude Desktop because this adapter does not establish a portable safe secret-injection mechanism for those paths. Use OAuth or a documented local-capable client explicitly.
+Remote-token bundles are not offered for ChatGPT, the Claude apps, portable plugins or Claude Desktop because this adapter does not establish a portable safe secret-injection mechanism for those paths. Use OAuth or a documented local-capable client explicitly.
+
+The Claude API and OpenAI Responses API cannot run DigitalOcean's OAuth sign-in, so they use remote-token only. The placeholder is not an interpolation syntax either API understands: read the token from your secret store at request time and substitute it in memory. Never commit the substituted request, log it or include the token in a prompt. Both providers send the token to DigitalOcean on each request and do not return it in responses. The Claude API runs MCP tool calls without per-call approval, so prefer read-only token scopes there.
 
 On Windows, use the operating system's user environment-variable UI and restart the client. On macOS/Linux, use a secure secret manager or non-echoing shell input in the launching session. GUI apps may not inherit a shell's environment. Never verify a token using `echo`; `doctor` reports presence only. Presence in the CLI environment does not prove presence in the client's environment.
 
