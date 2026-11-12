@@ -6,6 +6,8 @@ import {
   clients,
   configuration,
   compatibilityManifest,
+  claudePluginManifest,
+  claudeMarketplace,
   json,
 } from '../src/clients.js';
 
@@ -19,6 +21,8 @@ export function generatedFiles() {
   };
   files.set('mcp.json', configuration(defaults).content);
   files.set('.codex-plugin/plugin.json', json(compatibilityManifest()));
+  files.set('.claude-plugin/plugin.json', json(claudePluginManifest()));
+  files.set('.claude-plugin/marketplace.json', json(claudeMarketplace()));
   const compatibility = JSON.parse(configuration(defaults).content);
   delete compatibility.$schema;
   for (const entry of Object.values(compatibility.mcpServers))

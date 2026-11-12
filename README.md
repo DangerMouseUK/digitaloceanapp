@@ -31,6 +31,15 @@ node bin/digitaloceanapp.js setup --client codex --dry-run
 
 Add `--json` for a structured preview. Dry runs write no files and do not check the proposed output directory's writability.
 
+Using Claude Code? You can install Core with remote OAuth as a plugin instead, without cloning:
+
+```sh
+claude plugin marketplace add DangerMouseUK/digitaloceanapp
+claude plugin install digitaloceanapp@digitaloceanapp
+```
+
+Then run `/mcp` in a session to sign in. See the [Claude Code guide](clients/claude-code/README.md) for other presets and modes.
+
 Try asking:
 
 > What do I have running on DigitalOcean?
@@ -47,18 +56,21 @@ V3 also supports “Check this app before release,” “Review backups for thes
 
 ## Choose a client template
 
-| Client                      | Setup guide                                                      |
-| --------------------------- | ---------------------------------------------------------------- |
-| Codex                       | [Configuration and skills](clients/codex/README.md)              |
-| VS Code                     | [Configuration and skills](clients/vscode/README.md)             |
-| Cursor                      | [Configuration and skills](clients/cursor/README.md)             |
-| Claude Code                 | [Configuration and skills](clients/claude-code/README.md)        |
-| Claude Desktop              | [Connectors and local MCP](clients/claude-desktop/README.md)     |
-| Windsurf                    | [Configuration and skills](clients/windsurf/README.md)           |
-| ChatGPT                     | [Remote connections and plugin setup](clients/chatgpt/README.md) |
-| Other portable plugin hosts | [Plugin package](clients/plugin/README.md)                       |
+| Client                                | `--client`       | Setup guide                                                       |
+| ------------------------------------- | ---------------- | ----------------------------------------------------------------- |
+| Claude Code                           | `claude-code`    | [Plugin, configuration and skills](clients/claude-code/README.md) |
+| Claude (claude.ai, Desktop, mobile)   | `claude`         | [Custom connectors and skill uploads](clients/claude/README.md)   |
+| Claude Desktop local MCP              | `claude-desktop` | [Connectors and local MCP](clients/claude-desktop/README.md)      |
+| Claude API (Messages MCP connector)   | `anthropic-api`  | [Request fragment](clients/anthropic-api/README.md)               |
+| ChatGPT                               | `chatgpt`        | [Remote connections and plugin setup](clients/chatgpt/README.md)  |
+| Codex                                 | `codex`          | [Configuration and skills](clients/codex/README.md)               |
+| OpenAI Responses API (remote MCP)     | `openai-api`     | [Request fragment](clients/openai-api/README.md)                  |
+| VS Code                               | `vscode`         | [Configuration and skills](clients/vscode/README.md)              |
+| Cursor                                | `cursor`         | [Configuration and skills](clients/cursor/README.md)              |
+| Windsurf                              | `windsurf`       | [Configuration and skills](clients/windsurf/README.md)            |
+| Portable plugin (Codex, Claude Code…) | `plugin`         | [Plugin package](clients/plugin/README.md)                        |
 
-Connection modes and skill installation vary by client. ChatGPT uses remote connections; Claude Desktop configuration is provided for Windows and macOS. See the [compatibility notes](docs/clients.md) for the current limits.
+Connection modes and skill installation vary by client. ChatGPT and the Claude apps use remote connections; Claude Desktop local configuration is provided for Windows and macOS. The Claude API and OpenAI Responses API targets produce request fragments for your own code and use a DigitalOcean API token. See the [compatibility notes](docs/clients.md) for the current limits.
 
 ## Select your services
 
@@ -85,7 +97,7 @@ The output directory must be new, and its parent must already exist. Run `node b
 
 For local MCP, select `--mode local`. The generated configuration runs the pinned official DigitalOcean package on your computer. Supply `DIGITALOCEAN_API_TOKEN` through the client's supported secret input or launching environment.
 
-Remote API-token configurations are also available for Codex, VS Code, Cursor, Claude Code, and Windsurf. Setup only writes references to credentials, never their values. See [authentication](docs/authentication.md), [remote mode](docs/remote-mode.md), or [local mode](docs/local-mode.md) for instructions.
+Remote API-token configurations are also available for Codex, VS Code, Cursor, Claude Code, and Windsurf, and are the only mode for the Claude API and OpenAI Responses API targets. Setup only writes references to credentials, never their values. See [authentication](docs/authentication.md), [remote mode](docs/remote-mode.md), or [local mode](docs/local-mode.md) for instructions.
 
 ## Check your setup
 

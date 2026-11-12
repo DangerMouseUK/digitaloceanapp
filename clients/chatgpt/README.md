@@ -10,7 +10,7 @@ Configuration modes: remote-oauth.
 node bin/digitaloceanapp.js setup --client chatgpt --mode remote-oauth --preset core --output ./chatgpt-bundle
 ```
 
-Run from the repository. Use `--platform win32`, `--platform darwin` or `--platform linux` for a different supported target. The generator rejects unsupported combinations rather than silently changing modes. Generated examples under `examples/` cover supported modes and operating systems for Core; the CLI supports all presets/custom selections.
+Run from the repository. The generator rejects unsupported combinations rather than silently changing modes. Generated examples under `examples/` cover supported modes and operating systems for Core; the CLI supports all presets/custom selections.
 
 ## Install and verify
 
@@ -22,6 +22,6 @@ Run validation against the bundle, inspect the client’s MCP connection and ski
 
 ## Remove and troubleshoot
 
-Remove only the server entries/connector registrations and skill folders installed from this bundle. Remove any now-unused VS Code secret input. Revoke DigitalOcean grants separately if required. For plugin installation, uninstall through the host’s plugin controls.
+Remove only the server entries/connector registrations and skill folders installed from this bundle. Revoke DigitalOcean grants separately if required. For plugin installation, uninstall through the host’s plugin controls.
 
-For token modes, use the [authentication guide](../../docs/authentication.md); never copy token values into JSON/TOML or chat. GUI environment inheritance can differ from a shell. See [troubleshooting](../../docs/troubleshooting.md). No live compatibility claim follows from an example parsing successfully.
+See [troubleshooting](../../docs/troubleshooting.md). No live compatibility claim follows from an example parsing successfully.

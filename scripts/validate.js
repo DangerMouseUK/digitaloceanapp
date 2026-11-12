@@ -12,7 +12,11 @@ import {
   readJson,
   selectServices,
 } from '../src/catalog.js';
-import { compatibilityManifest } from '../src/clients.js';
+import {
+  compatibilityManifest,
+  claudePluginManifest,
+  claudeMarketplace,
+} from '../src/clients.js';
 import { hasSecret } from '../src/validate.js';
 
 const base = fileURLToPath(root);
@@ -30,6 +34,14 @@ assert.ok(
 assert.deepEqual(
   readJson('.codex-plugin/plugin.json'),
   compatibilityManifest(),
+);
+assert.deepEqual(
+  readJson('.claude-plugin/plugin.json'),
+  claudePluginManifest(),
+);
+assert.deepEqual(
+  readJson('.claude-plugin/marketplace.json'),
+  claudeMarketplace(),
 );
 assert.equal(readJson('package.json').version, manifest.version);
 assert.equal(readJson('package-lock.json').version, manifest.version);
@@ -103,6 +115,16 @@ for (const path of await walk(base)) {
     );
     assert.equal(typeof front.description, 'string');
     assert.ok(front.description.length > 20);
+    // Agent Skills limits shared by Claude and OpenAI skill loaders.
+    assert.ok(front.name.length <= 64, `Skill name too long: ${front.name}`);
+    assert.ok(
+      !/(?:^|-)(?:claude|anthropic)(?:-|$)/.test(front.name),
+      `Reserved word in skill name: ${front.name}`,
+    );
+    assert.ok(
+      front.description.length <= 1024 && !/[<>]/.test(front.description),
+      `Skill description must be at most 1024 characters without angle brackets: ${front.name}`,
+    );
     assert.ok(!text.includes('[TODO:'));
     skillNames.push(front.name);
     skillCount++;

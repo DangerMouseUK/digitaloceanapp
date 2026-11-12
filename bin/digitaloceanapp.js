@@ -106,9 +106,14 @@ async function interview(values) {
       'codex',
       (client) => validateAnswers({ ...options, client }),
     );
+    // API clients have no OAuth flow, so their prompt offers their only documented mode.
+    const clientModes = clients[options.client].modes;
+    const defaultMode = clientModes.includes('remote-oauth')
+      ? 'remote-oauth'
+      : clientModes[0];
     options.mode ??= await askValid(
-      `Mode (${clients[options.client].modes.join(', ')}) [remote-oauth]: `,
-      'remote-oauth',
+      `Mode (${clientModes.join(', ')}) [${defaultMode}]: `,
+      defaultMode,
       (mode) => validateAnswers({ ...options, mode }),
     );
     if (options.preset === undefined && options.services === undefined) {

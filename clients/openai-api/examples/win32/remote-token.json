@@ -1,0 +1,35 @@
+{
+  "tools": [
+    {
+      "type": "mcp",
+      "server_label": "digitalocean_accounts",
+      "server_description": "DigitalOcean Accounts: Account details, balances, invoices and billing.",
+      "server_url": "https://accounts.mcp.digitalocean.com/mcp",
+      "authorization": "${DIGITALOCEAN_API_TOKEN}",
+      "require_approval": "always"
+    },
+    {
+      "type": "mcp",
+      "server_label": "digitalocean_apps",
+      "server_description": "DigitalOcean App Platform: Applications, components, specifications and deployments.",
+      "server_url": "https://apps.mcp.digitalocean.com/mcp",
+      "authorization": "${DIGITALOCEAN_API_TOKEN}",
+      "require_approval": "always"
+    },
+    {
+      "type": "mcp",
+      "server_label": "digitalocean_insights",
+      "server_description": "DigitalOcean Insights: Monitoring policies and uptime checks; available measurements depend on tools.",
+      "server_url": "https://insights.mcp.digitalocean.com/mcp",
+      "authorization": "${DIGITALOCEAN_API_TOKEN}",
+      "require_approval": "always"
+    },
+    {
+      "type": "mcp",
+      "server_label": "digitalocean_docs",
+      "server_description": "DigitalOcean Documentation: Search and retrieve public DigitalOcean documentation.",
+      "server_url": "https://docs.mcp.digitalocean.com/mcp",
+      "require_approval": "always"
+    }
+  ]
+}

@@ -3,7 +3,12 @@ import { parse as parseJsonc } from 'jsonc-parser';
 import { parse as parseToml } from 'smol-toml';
 import { isDeepStrictEqual } from 'node:util';
 import { resolve } from 'node:path';
-import { configuration, clients } from './clients.js';
+import {
+  configuration,
+  clients,
+  apiClients,
+  documentField,
+} from './clients.js';
 import { bundleFiles, containedFile } from './bundle.js';
 import { checkFileHashes } from './fingerprints.js';
 import {
@@ -33,8 +38,12 @@ function credentialProblem(value, key = '') {
   if (typeof value !== 'string') return false;
   if (key === 'bearer_token_env_var')
     return !/^[A-Za-z_][A-Za-z0-9_]*$/.test(value);
+  // Header values carry a Bearer prefix; API authorization fields carry the bare token reference.
   if (/^(authorization|proxy-authorization)$/i.test(key))
-    return !value.startsWith('Bearer ') || !isReference(value.slice(7));
+    return !(
+      isReference(value) ||
+      (value.startsWith('Bearer ') && isReference(value.slice(7)))
+    );
   if (/token|password|secret|api[_-]?key/i.test(key))
     return !isReference(value);
   return false;
@@ -94,20 +103,22 @@ export function validateConfiguration(text, options) {
   const expected = configuration(options);
   const actual = parseConfiguration(text, options.client);
   const desired = parseConfiguration(expected.content, options.client);
-  const field =
-    options.client === 'codex'
-      ? 'mcp_servers'
-      : options.client === 'vscode'
-        ? 'servers'
-        : options.client === 'claude-desktop' && options.mode === 'remote-oauth'
-          ? 'connectors'
-          : 'mcpServers';
+  const field = documentField(options.client, options.mode);
   if (!actual[field] || typeof actual[field] !== 'object')
     throw new Error('Missing MCP server map or connector list.');
   if (field === 'connectors') {
     if (!isDeepStrictEqual(actual[field], desired[field]))
       throw new Error(
         'Connector endpoints or selected services differ from the registry.',
+      );
+  } else if (apiClients.includes(options.client)) {
+    if (credentialProblem(actual))
+      throw new Error(
+        'Embedded credential or unsupported secret reference detected; values are suppressed.',
+      );
+    if (!isDeepStrictEqual(actual, desired))
+      throw new Error(
+        'API request fragment differs: check missing/unexpected services, exact endpoints, beta header, approval settings and credential placeholders.',
       );
   } else {
     if (Array.isArray(actual[field]))

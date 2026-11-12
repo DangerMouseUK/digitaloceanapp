@@ -26,6 +26,7 @@
     "plugin.json",
     "mcp.json",
     ".codex-plugin/",
+    ".claude-plugin/",
     ".mcp.json",
     "SECURITY.md",
     "CHANGELOG.md",

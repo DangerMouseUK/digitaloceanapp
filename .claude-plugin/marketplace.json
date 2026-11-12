@@ -1,0 +1,14 @@
+{
+  "name": "digitaloceanapp",
+  "owner": {
+    "name": "DangerMouseUK"
+  },
+  "description": "Evidence-based DigitalOcean workflows using official MCP services. No backend or credential custody.",
+  "plugins": [
+    {
+      "name": "digitaloceanapp",
+      "source": "./",
+      "description": "Evidence-based DigitalOcean workflows using official MCP services. No backend or credential custody."
+    }
+  ]
+}

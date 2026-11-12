@@ -1,0 +1,50 @@
+{
+  "headers": {
+    "anthropic-beta": "mcp-client-2025-11-20"
+  },
+  "body": {
+    "mcp_servers": [
+      {
+        "type": "url",
+        "url": "https://accounts.mcp.digitalocean.com/mcp",
+        "name": "digitalocean-accounts",
+        "authorization_token": "${DIGITALOCEAN_API_TOKEN}"
+      },
+      {
+        "type": "url",
+        "url": "https://apps.mcp.digitalocean.com/mcp",
+        "name": "digitalocean-apps",
+        "authorization_token": "${DIGITALOCEAN_API_TOKEN}"
+      },
+      {
+        "type": "url",
+        "url": "https://insights.mcp.digitalocean.com/mcp",
+        "name": "digitalocean-insights",
+        "authorization_token": "${DIGITALOCEAN_API_TOKEN}"
+      },
+      {
+        "type": "url",
+        "url": "https://docs.mcp.digitalocean.com/mcp",
+        "name": "digitalocean-docs"
+      }
+    ],
+    "tools": [
+      {
+        "type": "mcp_toolset",
+        "mcp_server_name": "digitalocean-accounts"
+      },
+      {
+        "type": "mcp_toolset",
+        "mcp_server_name": "digitalocean-apps"
+      },
+      {
+        "type": "mcp_toolset",
+        "mcp_server_name": "digitalocean-insights"
+      },
+      {
+        "type": "mcp_toolset",
+        "mcp_server_name": "digitalocean-docs"
+      }
+    ]
+  }
+}

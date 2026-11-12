@@ -10,12 +10,12 @@ import {
 
 export const clients = {
   plugin: {
-    name: 'OpenAI portable plugin',
+    name: 'Portable plugin (Codex, Claude Code and other plugin hosts)',
     file: 'mcp.json',
     skills: 'skills',
     modes: ['remote-oauth', 'local'],
     destination:
-      'Install the bundle as a local plugin in a host that supports portable plugins.',
+      'Install the bundle as a local plugin. Codex reads .codex-plugin/plugin.json. Claude Code reads .claude-plugin/plugin.json: run claude plugin marketplace add with the bundle path, then claude plugin install digitaloceanapp@digitaloceanapp. Other hosts read plugin.json and mcp.json.',
   },
   chatgpt: {
     name: 'ChatGPT',
@@ -57,6 +57,14 @@ export const clients = {
     destination:
       'Merge mcpServers into project .mcp.json and copy .claude/skills into your project. Approve project MCP servers and inspect /mcp.',
   },
+  claude: {
+    name: 'Claude apps (claude.ai, Claude Desktop, mobile, Cowork)',
+    file: 'connectors.json',
+    skills: 'skills',
+    modes: ['remote-oauth'],
+    destination:
+      'Add each URL from connectors.json in Claude under Customize > Connectors > Add custom connector. On Team and Enterprise plans an owner adds it under Organization settings > Connectors, then members connect. Connectors are configured through your Claude account rather than one device.',
+  },
   'claude-desktop': {
     name: 'Claude Desktop',
     file: 'claude_desktop_config.json',
@@ -65,6 +73,22 @@ export const clients = {
     platforms: ['win32', 'darwin'],
     destination:
       'Remote: add each URL in Customize > Connectors > Add custom connector. Local: merge mcpServers into the desktop developer configuration (Windows: %APPDATA%/Claude/claude_desktop_config.json; macOS: ~/Library/Application Support/Claude/claude_desktop_config.json). Import skills manually using the client skill UI; availability depends on your plan.',
+  },
+  'anthropic-api': {
+    name: 'Claude API (Messages API MCP connector)',
+    file: 'anthropic-mcp.json',
+    skills: 'skills',
+    modes: ['remote-token'],
+    destination:
+      'Send the anthropic-beta header and merge body.mcp_servers and body.tools into your Messages API request. In code, replace each ${DIGITALOCEAN_API_TOKEN} placeholder with a token read from your secret store at request time.',
+  },
+  'openai-api': {
+    name: 'OpenAI Responses API (remote MCP tool)',
+    file: 'openai-mcp.json',
+    skills: 'skills',
+    modes: ['remote-token'],
+    destination:
+      'Merge the tools entries into your Responses API request. In code, replace each ${DIGITALOCEAN_API_TOKEN} placeholder with a token read from your secret store at request time. Keep require_approval set to always unless you have reviewed the tools.',
   },
   windsurf: {
     name: 'Windsurf',
@@ -77,6 +101,24 @@ export const clients = {
 };
 
 export const json = (value) => JSON.stringify(value, null, 2) + '\n';
+
+// Hosted connector lists and API request fragments are compared as whole documents.
+export const connectorClients = ['claude'];
+export const apiClients = ['anthropic-api', 'openai-api'];
+export const anthropicMcpBeta = 'mcp-client-2025-11-20';
+
+export function documentField(client, mode) {
+  if (client === 'codex') return 'mcp_servers';
+  if (client === 'vscode') return 'servers';
+  if (
+    connectorClients.includes(client) ||
+    (client === 'claude-desktop' && mode === 'remote-oauth')
+  )
+    return 'connectors';
+  if (client === 'anthropic-api') return 'body';
+  if (client === 'openai-api') return 'tools';
+  return 'mcpServers';
+}
 
 export function supportedPlatforms(client) {
   return clients[client].platforms ?? platforms;
@@ -105,7 +147,13 @@ export function installationDetails({ client, mode, platform, keys }) {
   }
   if (['plugin', 'chatgpt'].includes(client))
     removal =
-      'Uninstall the plugin through the host plugin controls. If you installed endpoints and skills manually, remove only those connectors and imported skills.';
+      'Uninstall the plugin through the host plugin controls (Claude Code: claude plugin uninstall digitaloceanapp@digitaloceanapp, then claude plugin marketplace remove digitaloceanapp). If you installed endpoints and skills manually, remove only those connectors and imported skills.';
+  if (client === 'claude')
+    removal =
+      'Remove the connectors you added under Customize > Connectors (or Organization settings > Connectors) and delete the skills you uploaded under Customize > Skills.';
+  if (apiClients.includes(client))
+    removal =
+      'Remove the DigitalOcean entries from your request code. Revoke or rotate the DigitalOcean token if nothing else uses it.';
   return { destination, removal };
 }
 
@@ -114,7 +162,7 @@ export function assertCombination(client, mode, keys, platform) {
     throw new Error('Unknown client. Run setup --help for choices.');
   if (!modes.includes(mode) || !clients[client].modes.includes(mode))
     throw new Error(
-      'Unsupported client/mode combination. Use remote-oauth or another documented client.',
+      `Unsupported client/mode combination. ${clients[client].name} supports: ${clients[client].modes.join(', ')}.`,
     );
   if (!platforms.includes(platform))
     throw new Error('Platform must be win32, darwin, or linux.');
@@ -136,8 +184,52 @@ export function assertCombination(client, mode, keys, platform) {
 
 function reference(client) {
   if (client === 'vscode') return '${input:digitalocean-token}';
-  if (client === 'claude-code') return '${DIGITALOCEAN_API_TOKEN}';
+  // API placeholders are substituted by the caller's code, never by this tool.
+  if (['claude-code', ...apiClients].includes(client))
+    return '${DIGITALOCEAN_API_TOKEN}';
   return '${env:DIGITALOCEAN_API_TOKEN}';
+}
+
+function apiConfiguration(client, mode, keys) {
+  const authenticated = (service) =>
+    mode === 'remote-token' && service.remote.authentication !== 'none';
+  if (client === 'anthropic-api') {
+    const servers = keys.map((key) => {
+      const service = services.get(key);
+      const server = {
+        type: 'url',
+        url: service.remote.url,
+        name: `digitalocean-${key}`,
+      };
+      if (authenticated(service))
+        server.authorization_token = reference(client);
+      return server;
+    });
+    return {
+      headers: { 'anthropic-beta': anthropicMcpBeta },
+      body: {
+        mcp_servers: servers,
+        tools: servers.map(({ name }) => ({
+          type: 'mcp_toolset',
+          mcp_server_name: name,
+        })),
+      },
+    };
+  }
+  return {
+    tools: keys.map((key) => {
+      const service = services.get(key);
+      const tool = {
+        type: 'mcp',
+        server_label: `digitalocean_${key}`,
+        server_description: `DigitalOcean ${service.name}: ${service.description}`,
+        server_url: service.remote.url,
+      };
+      if (authenticated(service)) tool.authorization = reference(client);
+      tool.require_approval = 'always';
+      return tool;
+    }),
+  };
 }
 
 export function configuration({
@@ -149,7 +241,12 @@ export function configuration({
   assertCombination(client, mode, keys, platform);
   const servers = {};
   const needsToken = requiresAuthentication(keys, mode);
-  if (client === 'claude-desktop' && mode === 'remote-oauth') {
+  if (apiClients.includes(client))
+    return {
+      file: clients[client].file,
+      content: json(apiConfiguration(client, mode, keys)),
+    };
+  if (documentField(client, mode) === 'connectors') {
     return {
       file: 'connectors.json',
       content: json({
@@ -218,6 +315,37 @@ export function configuration({
   return {
     file: clients[client].file,
     content: client === 'codex' ? stringify(config) : json(config),
+  };
+}
+
+// Claude Code reads .claude-plugin/plugin.json and loads skills/ and .mcp.json from their default locations.
+export function claudePluginManifest() {
+  return {
+    name: manifest.name,
+    version: manifest.version,
+    description: manifest.description,
+    author: manifest.author,
+    homepage: manifest.homepage,
+    repository: manifest.repository,
+    license: manifest.license,
+    keywords: manifest.keywords,
+    privacyPolicyUrl:
+      manifest.extensions['com.openai'].interface.privacyPolicyURL,
+  };
+}
+
+export function claudeMarketplace() {
+  return {
+    name: manifest.name,
+    owner: { name: manifest.author.name },
+    description: manifest.description,
+    plugins: [
+      {
+        name: manifest.name,
+        source: './',
+        description: manifest.description,
+      },
+    ],
   };
 }
 

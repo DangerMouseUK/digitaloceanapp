@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Make the repository installable as a Claude Code plugin from its own marketplace (`claude plugin marketplace add DangerMouseUK/digitaloceanapp`). Portable plugin bundles now also carry `.claude-plugin/plugin.json` and a single-plugin marketplace. Both pass `claude plugin validate --strict`.
+- Add a `claude` target for claude.ai, Claude Desktop, mobile and Cowork remote connectors, with skill ZIP upload instructions.
+- Add `anthropic-api` (Messages API MCP connector) and `openai-api` (Responses API remote MCP tool) targets that generate request fragments with token placeholders, approvals kept on for OpenAI, and validation that rejects literal tokens or relaxed approvals.
+- Name each client's supported modes in combination errors, and default the interactive mode prompt to the client's documented mode.
+- Correct client guides that offered unsupported platforms, token modes or VS Code input removal to other clients.
+- Check skill names and descriptions against Agent Skills limits shared by Claude and OpenAI loaders.
+- Accept npm 12's keyed `npm pack --json` output in the packaging test.
+
 ## 1.0.0-rc.3 — 2026-10-01
 
 - Add offline setup dry runs with services, skills, installation and authentication previews; add redacted JSON to setup and upgrade dry runs without changing validate/doctor reports.

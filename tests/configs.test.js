@@ -114,6 +114,12 @@ test('unsupported combinations fail instead of falling back', () => {
     ['plugin', 'remote-token', 'linux'],
     ['claude-desktop', 'remote-token', 'win32'],
     ['claude-desktop', 'local', 'linux'],
+    ['claude', 'local', 'linux'],
+    ['claude', 'remote-token', 'darwin'],
+    ['anthropic-api', 'remote-oauth', 'linux'],
+    ['anthropic-api', 'local', 'linux'],
+    ['openai-api', 'remote-oauth', 'linux'],
+    ['openai-api', 'local', 'win32'],
     ['unknown', 'local', 'linux'],
     ['codex', 'bad', 'linux'],
     ['codex', 'local', 'unknown'],
@@ -150,6 +156,8 @@ test('native secret references remain literal and never expand the process envir
       ['cursor', '${env:DIGITALOCEAN_API_TOKEN}'],
       ['claude-code', '${DIGITALOCEAN_API_TOKEN}'],
       ['windsurf', '${env:DIGITALOCEAN_API_TOKEN}'],
+      ['anthropic-api', '${DIGITALOCEAN_API_TOKEN}'],
+      ['openai-api', '${DIGITALOCEAN_API_TOKEN}'],
     ]) {
       const { content } = configuration({
         client,
@@ -164,6 +172,91 @@ test('native secret references remain literal and never expand the process envir
     if (previous === undefined) delete process.env.DIGITALOCEAN_API_TOKEN;
     else process.env.DIGITALOCEAN_API_TOKEN = previous;
   }
+});
+
+test('API request fragments use documented shapes, keep approvals and reject literal tokens', () => {
+  const keys = ['apps', 'docs'];
+  const anthropic = {
+    client: 'anthropic-api',
+    mode: 'remote-token',
+    keys,
+    platform: 'linux',
+  };
+  const claudeRequest = JSON.parse(configuration(anthropic).content);
+  assert.deepEqual(claudeRequest.headers, {
+    'anthropic-beta': 'mcp-client-2025-11-20',
+  });
+  assert.deepEqual(
+    claudeRequest.body.tools,
+    keys.map((key) => ({
+      type: 'mcp_toolset',
+      mcp_server_name: `digitalocean-${key}`,
+    })),
+  );
+  const [apps, docs] = claudeRequest.body.mcp_servers;
+  assert.equal(apps.type, 'url');
+  assert.equal(apps.authorization_token, '${DIGITALOCEAN_API_TOKEN}');
+  assert.equal(docs.authorization_token, undefined);
+
+  const openai = { ...anthropic, client: 'openai-api' };
+  const responsesRequest = JSON.parse(configuration(openai).content);
+  assert.deepEqual(
+    responsesRequest.tools.map((tool) => [
+      tool.type,
+      tool.server_label,
+      tool.require_approval,
+    ]),
+    keys.map((key) => ['mcp', `digitalocean_${key}`, 'always']),
+  );
+  assert.equal(
+    responsesRequest.tools[0].authorization,
+    '${DIGITALOCEAN_API_TOKEN}',
+  );
+  assert.equal(responsesRequest.tools[1].authorization, undefined);
+
+  const synthetic = 'synthetic-' + 'private-value';
+  const literalClaude = structuredClone(claudeRequest);
+  literalClaude.body.mcp_servers[0].authorization_token = synthetic;
+  const literalOpenai = structuredClone(responsesRequest);
+  literalOpenai.tools[0].authorization = synthetic;
+  const relaxed = structuredClone(responsesRequest);
+  relaxed.tools[0].require_approval = 'never';
+  const missingBeta = structuredClone(claudeRequest);
+  delete missingBeta.headers;
+  for (const [value, options] of [
+    [literalClaude, anthropic],
+    [literalOpenai, openai],
+    [relaxed, openai],
+    [missingBeta, anthropic],
+  ]) {
+    let message = '';
+    try {
+      validateConfiguration(JSON.stringify(value), options);
+    } catch (error) {
+      message = error.message;
+    }
+    assert.ok(message, JSON.stringify(options));
+    assert.ok(!message.includes(synthetic));
+  }
+});
+
+test('Claude apps receive a connector inventory and API clients name their supported mode', () => {
+  const options = {
+    client: 'claude',
+    mode: 'remote-oauth',
+    keys: ['apps', 'docs'],
+    platform: 'linux',
+  };
+  const generated = configuration(options);
+  assert.equal(generated.file, 'connectors.json');
+  assert.deepEqual(JSON.parse(generated.content).connectors, [
+    { name: 'digitalocean-apps', url: 'https://apps.mcp.digitalocean.com/mcp' },
+    { name: 'digitalocean-docs', url: 'https://docs.mcp.digitalocean.com/mcp' },
+  ]);
+  assert.throws(
+    () => configuration({ ...options, client: 'anthropic-api' }),
+    /supports: remote-token/,
+  );
 });
 
 test('validation rejects endpoint lookalikes, embedded credentials, missing and extra services', () => {
