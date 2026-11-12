@@ -8,7 +8,7 @@
         "/c",
         "npx",
         "-y",
-        "@digitalocean/mcp@1.1.1",
+        "@digitalocean/mcp@1.6.5",
         "--services",
         "accounts,apps,insights,docs"
       ],

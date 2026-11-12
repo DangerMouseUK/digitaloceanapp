@@ -2,7 +2,7 @@
 
 Generate `setup --client CLIENT --mode local --preset core --output NEW_DIRECTORY`. Local MCP is available for the `plugin`, Codex, VS Code, Cursor, Claude Code, Claude Desktop and Windsurf targets. ChatGPT cloud is remote-only; Claude Desktop has no Linux adapter.
 
-The generated configuration starts `npx -y @digitalocean/mcp@1.1.1 --services SELECTED_SERVICES`. Windows configurations invoke the npx shim through `cmd /d /s /c`; command arguments come from the reviewed registry. No shell command incorporates token values or user-provided arbitrary service names.
+The generated configuration starts `npx -y @digitalocean/mcp@1.6.5 --services SELECTED_SERVICES`. Windows configurations invoke the npx shim through `cmd /d /s /c`; command arguments come from the reviewed registry. No shell command incorporates token values or user-provided arbitrary service names.
 
 Node/npx must be installed and reachable from the AI client. The package download is performed by npm when the user starts the server; network access may be needed then. The CLI does not download or execute MCP as part of setup or diagnostics.
 

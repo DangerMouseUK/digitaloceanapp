@@ -151,7 +151,7 @@ Start with what you use. Every extra server adds tools your assistant has to cho
 | `core` (default) | Accounts, App Platform, Insights, Documentation                                              |
 | `app-platform`   | Core plus Container Registry, Spaces and Networking                                          |
 | `infrastructure` | Accounts, Droplets, Databases, Kubernetes, Networking, Volumes, NFS, Insights, Documentation |
-| `full`           | All 21 services in the reviewed registry, including Functions and AI inference services      |
+| `full`           | All 24 services in the reviewed registry, including Functions, MicroVMs and AI services      |
 
 Or pick individual services:
 

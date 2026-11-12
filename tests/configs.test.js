@@ -93,7 +93,7 @@ test('Core and PRD preset memberships are explicit and Full is opt-in', () => {
     'insights',
     'docs',
   ]);
-  assert.equal(selectServices({ preset: 'full' }).length, 21);
+  assert.equal(selectServices({ preset: 'full' }).length, 24);
   assert.deepEqual(selectServices({ services: 'apps, docs,apps' }), [
     'apps',
     'docs',

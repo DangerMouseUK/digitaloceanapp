@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-09-27",
-  "localPackage": "@digitalocean/mcp@1.1.1",
-  "remoteSource": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-  "localSource": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/pkg/registry/registry.go",
+  "verifiedAt": "2026-11-12",
+  "localPackage": "@digitalocean/mcp@1.6.5",
+  "remoteSource": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+  "localSource": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/pkg/registry/registry.go",
   "services": [
     {
       "key": "accounts",
@@ -18,8 +18,8 @@
         "service": "accounts",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "apps",
@@ -34,8 +34,8 @@
         "service": "apps",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "insights",
@@ -50,8 +50,8 @@
         "service": "insights",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "docs",
@@ -66,8 +66,8 @@
         "service": "docs",
         "requiresToken": false
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "docr",
@@ -82,8 +82,8 @@
         "service": "docr",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "spaces",
@@ -98,8 +98,8 @@
         "service": "spaces",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "networking",
@@ -114,8 +114,8 @@
         "service": "networking",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "droplets",
@@ -130,8 +130,8 @@
         "service": "droplets",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "databases",
@@ -146,8 +146,8 @@
         "service": "databases",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "doks",
@@ -162,8 +162,8 @@
         "service": "doks",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "volumes",
@@ -178,8 +178,8 @@
         "service": "volumes",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "nfs",
@@ -194,8 +194,8 @@
         "service": "nfs",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "functions",
@@ -210,8 +210,8 @@
         "service": "functions",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "marketplace",
@@ -226,8 +226,8 @@
         "service": "marketplace",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "vector-databases",
@@ -242,8 +242,8 @@
         "service": "vector-databases",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "dedicated-inference",
@@ -258,8 +258,8 @@
         "service": "dedicated-inference",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "inference-modelcatalog",
@@ -274,8 +274,8 @@
         "service": "inference-modelcatalog",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "genai-evaluation",
@@ -290,8 +290,8 @@
         "service": "genai-evaluation",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "genai-custom-models",
@@ -306,8 +306,8 @@
         "service": "genai-custom-models",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "genai-batchinference",
@@ -322,8 +322,8 @@
         "service": "genai-batchinference",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     },
     {
       "key": "genai-inferencerouter",
@@ -338,8 +338,56 @@
         "service": "genai-inferencerouter",
         "requiresToken": true
       },
-      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.1.1/README.md",
-      "verifiedAt": "2026-09-27"
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
+    },
+    {
+      "key": "microvms",
+      "name": "MicroVMs",
+      "description": "MicroVM lifecycle, command execution, files and checkpoints.",
+      "category": "compute",
+      "remote": {
+        "url": "https://microvms.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "microvms",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
+    },
+    {
+      "key": "signals",
+      "name": "Signals",
+      "description": "Gradient agent and serverless inference sessions, segments and consent.",
+      "category": "ai",
+      "remote": {
+        "url": "https://signals.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "signals",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
+    },
+    {
+      "key": "harness-runtime",
+      "name": "Harness Runtime",
+      "description": "Hosted agent environments, sessions and checkpoints.",
+      "category": "ai",
+      "remote": {
+        "url": "https://harness-runtime.mcp.digitalocean.com/mcp",
+        "authentication": "oauth-or-token"
+      },
+      "local": {
+        "service": "harness-runtime",
+        "requiresToken": true
+      },
+      "source": "https://github.com/digitalocean-labs/mcp-digitalocean/blob/v1.6.5/README.md",
+      "verifiedAt": "2026-11-12"
     }
   ]
 }
